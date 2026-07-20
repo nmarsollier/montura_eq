@@ -1,0 +1,575 @@
+/* ═══════════════════════════════════════════════════
+   Monturita — Velvet Dark Theme
+   Paleta: negro, gris oscuro, rojo velvet
+   ═══════════════════════════════════════════════════ */
+
+:root {
+    --bg: #080808;
+    --panel: #111111;
+    --panel-raised: #181818;
+    --border: #251010;
+    --accent: #8b1a1a;
+    --accent-bright: #b52222;
+    --accent-glow: #3d0808;
+    --text: #ebebeb;
+    --text-dim: #8a7a7a;
+    --text-title: #e8c0c0;
+    --text-accent: #d48080;
+    --btn-bg: #1c0d0d;
+    --btn-hover: #3d1515;
+    --btn-active: #5a1a1a;
+    --input-bg: #0d0d0d;
+    --input-border: #2a1515;
+    --shadow: 0 4px 24px rgba(0, 0, 0, .7);
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', system-ui, -apple-system, Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background: var(--bg);
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
+}
+
+/* ═══════════════════════════════════════════════════
+   Layout
+   ═══════════════════════════════════════════════════ */
+
+.app {
+    max-width: 880px;
+    margin: 0 auto;
+    padding: 20px 16px 40px;
+}
+
+/* ═══════════════════════════════════════════════════
+   Header
+   ═══════════════════════════════════════════════════ */
+
+.header {
+    text-align: center;
+    padding: 28px 16px 20px;
+    margin-bottom: 16px;
+}
+
+.header-brand {
+    font-size: 36px;
+    font-weight: 800;
+    letter-spacing: 2px;
+    color: var(--text-title);
+    text-shadow: 0 0 40px var(--accent-glow), 0 2px 4px rgba(0, 0, 0, .8);
+    margin: 0;
+}
+
+.header-brand span {
+    color: var(--accent-bright);
+}
+
+.header-sub {
+    font-size: 13px;
+    color: var(--text-dim);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-top: 4px;
+}
+
+.header-line {
+    width: 80px;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+    margin: 14px auto 0;
+    border: none;
+}
+
+/* ═══════════════════════════════════════════════════
+   Panels
+   ═══════════════════════════════════════════════════ */
+
+.panel {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px 20px;
+    margin-bottom: 12px;
+    box-shadow: var(--shadow);
+    transition: border-color .2s;
+}
+
+.panel:hover {
+    border-color: #351515;
+}
+
+.panel-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 14px;
+}
+
+.panel-header strong {
+    color: var(--text-title);
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: .6px;
+}
+
+.panel-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--accent-bright);
+    box-shadow: 0 0 8px var(--accent-bright);
+}
+
+/* ═══════════════════════════════════════════════════
+   Status bar
+   ═══════════════════════════════════════════════════ */
+
+.status-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+}
+
+.status-badge {
+    display: inline-block;
+    padding: 4px 14px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: .4px;
+    background: var(--btn-bg);
+    color: var(--text-accent);
+    border: 1px solid var(--accent);
+}
+
+.coords {
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 13px;
+    color: var(--text);
+    letter-spacing: .3px;
+}
+
+.coords-label {
+    color: var(--text-dim);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-right: 4px;
+}
+
+.info-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 18px;
+    margin-top: 10px;
+    font-size: 12px;
+    color: var(--text-dim);
+}
+
+.info-row span {
+    color: var(--text);
+}
+
+/* ═══════════════════════════════════════════════════
+   Grid
+   ═══════════════════════════════════════════════════ */
+
+.grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+/* ═══════════════════════════════════════════════════
+   Buttons
+   ═══════════════════════════════════════════════════ */
+
+.row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+button {
+    background: var(--btn-bg);
+    color: var(--text);
+    border: 1px solid var(--border);
+    padding: 10px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: .3px;
+    transition: all .15s ease;
+}
+
+button:hover {
+    background: var(--btn-hover);
+    border-color: var(--accent);
+    color: #fff;
+}
+
+button:active {
+    background: var(--btn-active);
+}
+
+button.danger {
+    background: #200a0a;
+    border-color: #4a1515;
+    color: var(--text-accent);
+}
+
+button.danger:hover {
+    background: #3d1010;
+    border-color: var(--accent-bright);
+    color: #f08080;
+}
+
+button.primary {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+    font-weight: 600;
+}
+
+button.primary:hover {
+    background: var(--accent-bright);
+    border-color: var(--accent-bright);
+    box-shadow: 0 0 16px var(--accent-glow);
+}
+
+/* ═══════════════════════════════════════════════════
+   Manual Slew — two-column layout, centered
+   ═══════════════════════════════════════════════════ */
+
+.slew-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+    align-items: center;
+    justify-items: center;
+    max-width: 520px;
+    margin: 0 auto;
+}
+
+/* Left column: Grados + Velocidad (label-left, input-right) */
+
+.slew-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    width: 100%;
+}
+
+.slew-field {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.slew-field label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    color: var(--text-dim);
+    white-space: nowrap;
+    min-width: 70px;
+    text-align: right;
+}
+
+.slew-field-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.slew-hint {
+    font-size: 11px;
+    color: var(--text-dim);
+}
+
+.slew-field input,
+.slew-field select {
+    width: 90px;
+}
+
+/* Right column: directional pad */
+
+.slew-pad {
+    display: flex;
+    justify-content: center;
+}
+
+/* Two-row axis layout: RA row + DEC row, each with ◀ label ▶ */
+.axis-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: center;
+}
+
+.axis-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.axis-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-dim);
+    letter-spacing: 1px;
+    min-width: 32px;
+    text-align: center;
+    text-transform: uppercase;
+}
+
+.axis-grid button {
+    width: 48px;
+    height: 42px;
+    font-size: 18px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+}
+
+/* --- Joystick (continuous move) --- */
+.joy-btn {
+    width: 48px;
+    height: 42px;
+    font-size: 18px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: var(--btn-bg);
+    color: var(--text);
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: none;
+}
+
+.joy-btn:active {
+    background: var(--accent);
+    color: #fff;
+}
+
+.hint {
+    font-size: 10px;
+    color: var(--text-dim);
+    font-weight: normal;
+}
+
+
+/* ═══════════════════════════════════════════════════
+   Settings — time + location
+   ═══════════════════════════════════════════════════ */
+
+.settings-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+}
+
+.settings-row:last-child {
+    margin-bottom: 0;
+}
+
+.settings-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    color: var(--text-dim);
+    min-width: 80px;
+}
+
+.settings-value {
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 13px;
+    color: var(--text);
+    flex: 1;
+}
+
+.settings-fields {
+    display: flex;
+    gap: 6px;
+}
+
+.settings-input {
+    width: 72px;
+}
+
+.settings-input-short {
+    width: 56px;
+}
+
+/* ═══════════════════════════════════════════════════
+   Slew to Coordinates — 3-field coordinate inputs + bottom-aligned button
+   ═══════════════════════════════════════════════════ */
+
+/* Three-field H:M:S or D:M:S row */
+.coord-fields {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+}
+
+.coord-fields input {
+    width: 52px;
+    text-align: center;
+    padding: 8px 4px;
+    font-variant-numeric: tabular-nums;
+}
+
+.coord-sep {
+    color: var(--text-dim);
+    font-size: 14px;
+    font-weight: 600;
+    user-select: none;
+}
+
+/* Right column: push SLEW button to the bottom */
+.slew-btn-col {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: center;
+}
+
+.slew-btn-col button {
+    min-width: 80px;
+    padding: 14px 24px;
+    font-size: 16px;
+}
+
+@media (max-width: 500px) {
+    .slew-layout {
+        grid-template-columns: 1fr;
+        gap: 16px;
+        max-width: 100%;
+    }
+
+    .slew-pad {
+        order: -1;
+    }
+}
+
+/* ═══════════════════════════════════════════════════
+   Inputs
+   ═══════════════════════════════════════════════════ */
+
+select, input {
+    background: var(--input-bg);
+    color: var(--text);
+    border: 1px solid var(--input-border);
+    padding: 9px 12px;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: border-color .15s;
+    outline: none;
+}
+
+select:focus, input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px var(--accent-glow);
+}
+
+select {
+    cursor: pointer;
+}
+
+input::placeholder {
+    color: #4a3a3a;
+}
+
+/* ═══════════════════════════════════════════════════
+   WiFi warning
+   ═══════════════════════════════════════════════════ */
+
+.wifi-warning {
+    margin-top: 10px;
+    padding: 10px 14px;
+    border-radius: 8px;
+    background: #1a0a0a;
+    border: 1px solid #4a2020;
+    color: var(--text-accent);
+    font-size: 13px;
+}
+
+.wifi-warning::before {
+    content: '⚠ ';
+}
+
+/* ═══════════════════════════════════════════════════
+   Error banner
+   ═══════════════════════════════════════════════════ */
+
+.error-banner {
+    margin: 0 auto 12px;
+    max-width: 880px;
+    padding: 12px 18px;
+    border-radius: 10px;
+    background: #1a0a0a;
+    border: 1px solid var(--accent);
+    color: var(--text-accent);
+    font-size: 13px;
+    font-weight: 500;
+    text-align: center;
+    box-shadow: 0 0 20px var(--accent-glow);
+}
+
+/* ═══════════════════════════════════════════════════
+   Footer
+   ═══════════════════════════════════════════════════ */
+
+footer {
+    text-align: center;
+    font-size: 11px;
+    color: #332525;
+    margin-top: 20px;
+    letter-spacing: .5px;
+}
+
+footer code {
+    color: #4a3535;
+    background: #0d0d0d;
+    padding: 1px 6px;
+    border-radius: 4px;
+}
+
+/* ═══════════════════════════════════════════════════
+   Responsive
+   ═══════════════════════════════════════════════════ */
+
+@media (max-width: 600px) {
+    .grid {
+        grid-template-columns: 1fr;
+    }
+
+    .header-brand {
+        font-size: 26px;
+    }
+
+    .app {
+        padding: 12px 8px 30px;
+    }
+
+    .panel {
+        padding: 14px;
+    }
+}

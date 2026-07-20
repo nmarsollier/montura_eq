@@ -1,0 +1,261 @@
+<!doctype html>
+<html lang="es">
+
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <title>Montura EQ</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='14' fill='%231a1a2e' stroke='%234fc3f7' stroke-width='2'/%3E%3Ccircle cx='16' cy='16' r='2' fill='%234fc3f7'/%3E%3Cline x1='16' y1='6' x2='16' y2='2' stroke='%234fc3f7' stroke-width='2'/%3E%3C/svg%3E">
+    <!--INLINE_CSS-->
+
+</head>
+
+<body>
+<div class="app" x-data="mountApp()" x-init="init()">
+
+    <!-- ═══ Header ═══ -->
+    <div class="header">
+        <h1 class="header-brand"><span>Monturita</span></h1>
+        <div class="header-sub">Non precision instruments Inc.</div>
+        <hr class="header-line">
+    </div>
+
+    <!-- ═══ Status ═══ -->
+    <div class="panel">
+        <div class="status-row">
+            <span class="status-badge" x-text="statusText"></span>
+            <span class="status-badge" x-show="isHome" style="background:#4caf50;color:#fff">HOME</span>
+            <span class="status-badge" x-show="isParked" style="background:#ff9800;color:#fff">PARKED</span>
+            <div style="flex:1"></div>
+            <span class="coords"><span class="coords-label">RA</span> <span x-text="status.ra"></span></span>
+            <span class="coords"><span class="coords-label">DEC</span> <span x-text="status.dec"></span></span>
+            <span class="coords" style="opacity:0.7"><span class="coords-label">LST</span> <span x-text="lst"></span></span>
+            <span class="coords" style="opacity:0.7"><span class="coords-label">Pier</span> <span x-text="pierSide"></span></span>
+        </div>
+        <div class="info-row">
+            <div>Tracking <span x-text="serverTracking"></span></div>
+            <div>Lat <span x-text="settings.lat"></span></div>
+            <div>Lon <span x-text="settings.lon"></span></div>
+            <div>Elev <span x-text="settings.elevation"></span> m</div>
+            <div>Pier <span x-text="pierSide"></span></div>
+        </div>
+    </div>
+
+    <!-- ═══ Site & Time ═══ -->
+    <div class="panel">
+        <div class="panel-header">
+            <div class="panel-dot"></div>
+            <strong>Configuración</strong>
+        </div>
+
+        <!-- Time row -->
+        <div class="settings-row">
+            <span class="settings-fields">
+                <span class="settings-label">Fecha y hora</span>
+                <span class="settings-value" x-text="mountTime">--</span>
+            </span>
+            <button @click="updateTime()">Actualizar</button>
+        </div>
+
+        <!-- Location row -->
+        <div class="settings-row">
+            <span class="settings-label">Ubicación</span>
+            <span class="settings-fields">
+                <input type="text" inputmode="decimal" placeholder="Lat"
+                       x-model.number="settings.lat" class="settings-input" title="Latitud">
+                <input type="text" inputmode="decimal" placeholder="Lon"
+                       x-model.number="settings.lon" class="settings-input" title="Longitud">
+                <input type="text" inputmode="numeric" placeholder="Elev"
+                       x-model.number="settings.elevation" class="settings-input settings-input-short"
+                       title="Elevación (m)">
+            </span>
+            <button @click="updateSettings()">Actualizar</button>
+        </div>
+    </div>
+
+    <!-- ═══ Actions + Tracking ═══ -->
+    <div class="grid">
+        <div class="panel">
+            <div class="panel-header">
+                <div class="panel-dot"></div>
+                <strong>Acciones</strong>
+            </div>
+            <div class="row">
+                <button class="danger" @click="stop()">STOP</button>
+                <button @click="home()">HOME</button>
+                <button @click="park()" x-show="!isParked">PARK</button>
+                <button @click="unpark()" x-show="isParked">UNPARK</button>
+            </div>
+        </div>
+
+        <div class="panel">
+            <div class="panel-header">
+                <div class="panel-dot"></div>
+                <strong>Tracking</strong>
+            </div>
+            <div class="row">
+                <select x-model.number="selectedTracking">
+                    <template x-for="(m, i) in trackingOptions" :key="i">
+                        <option :value="i" x-text="m"></option>
+                    </template>
+                </select>
+                <button class="primary" @click="setTracking()">Set</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══ Manual Slew ═══ -->
+    <div class="panel">
+        <div class="panel-header">
+            <div class="panel-dot"></div>
+            <strong>Manual Slew</strong>
+        </div>
+
+        <div class="slew-layout">
+            <!-- Left: Grados + Velocidad -->
+            <div class="slew-controls">
+                <div class="slew-field">
+                    <label>Grados (1–90°)</label>
+                    <div class="slew-field-row">
+                        <input type="text" inputmode="decimal" x-model.number="slew.degrees">
+                    </div>
+                </div>
+
+                <div class="slew-field">
+                    <label>Velocidad</label>
+                    <select x-model.number="slew.speed">
+                        <option value="1">1×</option>
+                        <option value="2">2×</option>
+                        <option value="3">3×</option>
+                        <option value="4">4×</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Right: Directional pad -->
+            <div class="slew-pad">
+                <div class="axis-grid">
+                    <div class="axis-row">
+                        <button @click="doSlew('ra', -1)" title="RA −">◀</button>
+                        <span class="axis-label">RA</span>
+                        <button @click="doSlew('ra', 1)" title="RA +">▶</button>
+                    </div>
+                    <div class="axis-row">
+                        <button @click="doSlew('dec', -1)" title="DEC −">◀</button>
+                        <span class="axis-label">DEC</span>
+                        <button @click="doSlew('dec', 1)" title="DEC +">▶</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══ Joystick (continuous) ═══ -->
+    <div class="panel">
+        <div class="panel-header">
+            <div class="panel-dot"></div>
+            <strong>Joystick</strong> <span class="hint">(hold to move, release to stop)</span>
+        </div>
+        <div class="axis-grid">
+            <div class="axis-row">
+                <button class="joy-btn"
+                        @pointerdown="joyStart('ra', -1)" @pointerup="joyStop('ra')"
+                        @pointerleave="joyStop('ra')" title="RA −">◀</button>
+                <span class="axis-label">RA</span>
+                <button class="joy-btn"
+                        @pointerdown="joyStart('ra', 1)" @pointerup="joyStop('ra')"
+                        @pointerleave="joyStop('ra')" title="RA +">▶</button>
+            </div>
+            <div class="axis-row">
+                <button class="joy-btn"
+                        @pointerdown="joyStart('dec', -1)" @pointerup="joyStop('dec')"
+                        @pointerleave="joyStop('dec')" title="DEC −">◀</button>
+                <span class="axis-label">DEC</span>
+                <button class="joy-btn"
+                        @pointerdown="joyStart('dec', 1)" @pointerup="joyStop('dec')"
+                        @pointerleave="joyStop('dec')" title="DEC +">▶</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══ Slew to Coordinates ═══ -->
+    <div class="panel">
+        <div class="panel-header">
+            <div class="panel-dot"></div>
+            <strong>Slew to Coordinates</strong>
+        </div>
+
+        <div class="slew-layout">
+            <!-- Left: RA + DEC + Speed -->
+            <div class="slew-controls">
+                <div class="slew-field">
+                    <label>RA</label>
+                    <div class="coord-fields">
+                        <input type="text" inputmode="numeric" placeholder="HH" x-model.number="slewTarget.ra.h">
+                        <span class="coord-sep">:</span>
+                        <input type="text" inputmode="numeric" placeholder="MM" x-model.number="slewTarget.ra.m">
+                        <span class="coord-sep">:</span>
+                        <input type="text" inputmode="decimal" placeholder="SS" x-model.number="slewTarget.ra.s">
+                    </div>
+                </div>
+
+                <div class="slew-field">
+                    <label>DEC</label>
+                    <div class="coord-fields">
+                        <input type="text" inputmode="decimal" placeholder="±DD" x-model.number="slewTarget.dec.d">
+                        <span class="coord-sep">:</span>
+                        <input type="text" inputmode="numeric" placeholder="MM" x-model.number="slewTarget.dec.m">
+                        <span class="coord-sep">:</span>
+                        <input type="text" inputmode="decimal" placeholder="SS" x-model.number="slewTarget.dec.s">
+                    </div>
+                </div>
+
+                <div class="slew-field">
+                    <label>Velocidad</label>
+                    <select x-model.number="slewTarget.speed">
+                        <option value="1">1×</option>
+                        <option value="2">2×</option>
+                        <option value="3">3×</option>
+                        <option value="4">4×</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Right: Slew button (bottom-aligned) -->
+            <div class="slew-btn-col">
+                <button class="primary" @click="doSlewToCoordinates()">SLEW</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══ WiFi Setup ═══ -->
+    <div class="panel" x-show="wifiAp">
+        <div class="panel-header">
+            <div class="panel-dot"></div>
+            <strong>Configuración Wi-Fi</strong>
+        </div>
+        <div class="row">
+            <input placeholder="SSID" x-model="wifi.ssid">
+            <input placeholder="Password" x-model="wifi.password" type="text">
+            <button class="primary"
+                    @click="apiPost('/api/wifi-config', {ssid: wifi.ssid, password: wifi.password}).then(() => fetchStatus())">
+                Conectar
+            </button>
+        </div>
+        <div class="wifi-warning">La red no está configurada. Conectar ahora para salir del modo AP.</div>
+    </div>
+
+    <!-- ═══ Error banner ═══ -->
+    <div class="error-banner" x-show="errorMessage" x-text="errorMessage"
+         x-transition.opacity.duration.200ms></div>
+
+    <!-- ═══ Footer ═══ -->
+    <footer>Monturita· SPA embebida · REST <code>/api/*</code></footer>
+
+</div>
+
+<!--INLINE_JS-->
+<!--INLINE_ALPINE-->
+</body>
+
+</html>
