@@ -15,7 +15,7 @@
  * WiFi and USB networking coexist — servers bound to INADDR_ANY
  * are reachable on both interfaces.
  *
- * Call once during startup, after network_start() and led_init().
+ * Call once during startup, after wifi_start() and led_init().
  * Failure is logged but is not fatal.
  */
 esp_err_t usb_net_init(void);

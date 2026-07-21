@@ -1,4 +1,4 @@
-/* Network - network.c
+/* Wifi - wifi.c
  *
  * Purpose: initialize Wi-Fi for the physical ESP32-S3 board.
  *
@@ -11,10 +11,10 @@
  * - If station connection fails, start the setup AP as fallback.
  *
  * Runtime behavior:
- * - REST can call network_configure_home_wifi() to set the station credentials.
+ * - REST can call wifi_configure_home_wifi() to set the station credentials.
  * - ESP-IDF persists those credentials internally.
  */
-#include "network.h"
+#include "wifi.h"
 #include "led.h"
 
 #include <string.h>
@@ -26,14 +26,14 @@
 #include "esp_wifi.h"
 #include "freertos/event_groups.h"
 
-static const char *TAG = "NETWORK";
+static const char *TAG = "WIFI";
 
-/* Definitions for symbols exported from network.h */
+/* Definitions for symbols exported from wifi.h */
 EventGroupHandle_t wifi_event_group;
 int wifi_retry_count;
 bool setup_ap_started;
 bool wifi_started;
-char network_ip[17];
+char wifi_ip[17];
 
 static void log_ap_started(void) {
     ESP_LOGW(TAG, "Setup AP started");
@@ -160,14 +160,14 @@ static void ip_event_handler(
     ESP_LOGI(TAG, "IP: " IPSTR, IP2STR(&event->ip_info.ip));
     ESP_LOGI(TAG, "Open: http://" IPSTR, IP2STR(&event->ip_info.ip));
 
-    sprintf(network_ip, IPSTR, IP2STR(&event->ip_info.ip));
+    sprintf(wifi_ip, IPSTR, IP2STR(&event->ip_info.ip));
 
     /* Sync system clock via SNTP on first successful connection. */
     {
         static bool sntp_started = false;
         if (!sntp_started) {
             sntp_started = true;
-            network_sntp_start();
+            wifi_sntp_start();
         }
     }
 
@@ -215,7 +215,7 @@ static void start_wifi_driver(void) {
         NULL));
 }
 
-void network_start(void) {
+void wifi_start(void) {
     wifi_event_group = xEventGroupCreate();
     wifi_retry_count = 0;
     setup_ap_started = false;

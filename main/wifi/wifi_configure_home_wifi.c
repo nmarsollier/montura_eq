@@ -1,4 +1,4 @@
-/* Network - network_configure_home_wifi.c
+/* Wifi - wifi_configure_home_wifi.c
  *
  * Purpose: persist home Wi-Fi credentials via ESP-IDF Wi-Fi driver storage.
  *
@@ -6,7 +6,7 @@
  * ESP-IDF stores the credentials in its own NVS namespace so they survive
  * reboot — Montura EQ does not keep a separate Wi-Fi config.
  */
-#include "network.h"
+#include "wifi.h"
 
 #include <string.h>
 
@@ -17,12 +17,12 @@
 #include "esp_wifi.h"
 #include "freertos/event_groups.h"
 
-/* wifi_event_group is defined in network.c */
+/* wifi_event_group is defined in wifi.c */
 extern EventGroupHandle_t wifi_event_group;
 
-static const char *TAG = "NETWORK_CONFIGURE_HOME_WIFI";
+static const char *TAG = "WIFI_CONFIGURE_HOME_WIFI";
 
-esp_err_t network_configure_home_wifi(const char *ssid, const char *password) {
+esp_err_t wifi_configure_home_wifi(const char *ssid, const char *password) {
     if (ssid == NULL || strlen(ssid) == 0) {
         ESP_LOGE(TAG, "Cannot configure Wi-Fi: SSID is empty");
         return ESP_ERR_INVALID_ARG;

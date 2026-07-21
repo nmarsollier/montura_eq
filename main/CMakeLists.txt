@@ -48,10 +48,10 @@ idf_component_register(
         "mount/mount_unpark.c"
         "mount/mount_get_visible_status_data.c"
 
-        "network/network.c"
-        "network/network_configure_home_wifi.c"
-        "network/network_is_setup_ap_started.c"
-        "network/network_sntp.c"
+        "wifi/wifi.c"
+        "wifi/wifi_configure_home_wifi.c"
+        "wifi/wifi_is_setup_ap_started.c"
+        "wifi/wifi_sntp.c"
 
         "rest/rest_server_start.c"
         "rest/rest_slew_to_coordinates_handler.c"
@@ -198,7 +198,7 @@ idf_component_register(
         "runtime"
         "utils"
         "udp_alpaca"
-        "network"
+        "wifi"
         "tmc"
         "usb_net"
 

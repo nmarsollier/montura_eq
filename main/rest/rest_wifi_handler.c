@@ -7,7 +7,7 @@
 #include <string.h>
 
 #include "esp_err.h"
-#include "network/network.h"
+#include "wifi/wifi.h"
 #include "utils/utils.h"
 
 /*
@@ -32,7 +32,7 @@ esp_err_t rest_wifi_handler(httpd_req_t *request) {
         return ESP_OK;
     }
 
-    esp_err_t result = network_configure_home_wifi(ssid.value, password.value);
+    esp_err_t result = wifi_configure_home_wifi(ssid.value, password.value);
     if (result != ESP_OK) {
         httpd_resp_set_status(request, "409 Conflict");
         http_response_json(request, "{\"ok\":false,\"message\":\"Failed to configure WiFi\"}");

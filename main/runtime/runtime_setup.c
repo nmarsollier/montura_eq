@@ -11,7 +11,7 @@
 #include "led.h"
 #include "motors.h"
 #include "mount.h"
-#include "network.h"
+#include "wifi.h"
 #include "tmc.h"
 #include "usb_net.h"
 
@@ -33,7 +33,7 @@ void setup_init(void) {
     }
     ESP_ERROR_CHECK(nvs_result);
 
-    network_start();
+    wifi_start();
 
     led_init();
 
@@ -41,7 +41,7 @@ void setup_init(void) {
      * WiFi error: setup AP running means home wifi didn't connect.
      * Recoverable — a later successful connection calls led_clear_error().
      */
-    if (network_is_setup_ap_started()) {
+    if (wifi_is_setup_ap_started()) {
         led_set_state(LED_STATE_ERROR);
     }
 

@@ -47,7 +47,7 @@ Runtime  (init sequence + periodic loop)
 | 17   | TMC2209 UART TX    | Via 1k series resistor       |
 | 18   | TMC2209 UART RX    | Single-wire bus              |
 
-## USB Ethernet (RNDIS/ECM)
+## USB Ethernet (RNDIS/ECM)2
 
 The ESP32-S3 acts as a USB Ethernet gadget via its native USB-OTG peripheral. Connect the mount to a laptop with a USB-C cable and it appears as a network adapter — no WiFi needed in the field.
 
