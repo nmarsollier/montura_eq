@@ -31,9 +31,15 @@ Runtime  (init sequence + periodic loop)
 - **Motor drivers**: 2× TMC2209 (UART, StealthChop, 128 µsteps)
 - **Motors**: 2× NEMA 17 (1.8° step, 1.4 A rated)
 - **Reduction**: 20-tooth motor pulley → 80-tooth axis pulley (4:1)
+- **Power**: Power supply input of 12v 5A and MINI DC 360 to convert 12v dc to 5v dc.
+- **1k resistor**: for UART communication.
 - **LED**: PWM indicator (GPIO 4) — three states: dim (~10%) at idle, bright (100%) during slewing, slow breathing on error (WiFi / UART). On-board LED unused.
 
 ### Pin mapping
+
+<img src="docs/circuit.jpeg" alt="Montura EQ" width="400">
+
+<img src="docs/board.jpeg" alt="Montura EQ" width="400">
 
 | GPIO | Function           | Notes                        |
 |------|--------------------|------------------------------|
