@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stdint.h>
+#include "esp_err.h"
 
 /*
  * High-level state of the motors subsystem used as the authoritative
@@ -19,8 +20,6 @@ typedef enum {
     MOTORS_STATUS_DISABLED
 } MotorsStatus;
 
-/* NOTE: `MountStatus` alias removed - use `MotorsStatus` throughout the codebase. */
-
 /*
  * High-level tracking profiles the motors module can apply.
  */
@@ -37,12 +36,16 @@ typedef enum TrackingMode {
 
 /*
  * Authoritative snapshot of the motors module's view of the mount.
+ *
+ * Position fields are absolute microstep counters (int64_t) for zero
+ * accumulation error.  Use motors_get_ra_deg() / motors_get_dec_deg()
+ * to read the current position in degrees.
  */
 typedef struct {
-    /* Current RA axis angle in degrees. */
-    float ra_position;
-    /* Current DEC axis angle in degrees. */
-    float dec_position;
+    /* Current RA axis position — absolute microstep counter. */
+    int64_t ra_steps;
+    /* Current DEC axis position — absolute microstep counter. */
+    int64_t dec_steps;
     /* High-level motors-derived status. */
     MotorsStatus status;
     /* Current requested tracking mode. */
@@ -51,6 +54,8 @@ typedef struct {
     float ra_speed;
     /* Current commanded/measured DEC axis angular speed (deg/s). */
     float dec_speed;
+    /* True when a PulseGuide is active on either axis. */
+    bool guiding;
 
     /* Operational limits enforced by the motors module. */
     struct {
@@ -71,15 +76,19 @@ typedef enum {
 } MotorResultCode;
 
 /*
- * Initialize the motors subsystem.
+ * Initialize the motors subsystem.  Returns ESP_OK on success,
+ * otherwise the subsystem is left in DISABLED state.
  */
-void motors_init(void);
+esp_err_t motors_init(void);
 
 /*
- * Enable or disable motor drivers.
+ * Enable motor drivers.
  */
 void motors_enable(void);
 
+/*
+ * Disable motor drivers.
+ */
 void motors_disable(void);
 
 /*
@@ -88,13 +97,26 @@ void motors_disable(void);
 MotorsState motors_current_state(void);
 
 /*
+ * Current axis positions in degrees — derived view over the int64_t
+ * microstep counters.  No accumulation error.
+ */
+float motors_get_ra_deg(void);
+
+float motors_get_dec_deg(void);
+
+/*
  * Stop both axes and return to READY.
  */
 void motors_stop(void);
 
+/*
+ * Park both axes: stop motion and set status to PARKED.
+ */
 void motors_park(void);
 
-/* Convenience high-level home action. */
+/*
+ * Move the mount to the home position (0, 0).
+ */
 void motors_home(float lat);
 
 /*
@@ -115,16 +137,21 @@ void motors_set_move_axis_speed(float ra_speed, float dec_speed);
  */
 float motors_get_slewing_speed(int speed_rate);
 
+/*
+ * Return a comma-separated list of valid axis names ("RA, DEC").
+ */
 const char *motors_axis_valid_values(void);
 
-/* Canonical status and tracking name helpers — implemented in motors_tools.c. */
-const char *status_to_string(MotorsStatus status);
+/*
+ * Canonical status and tracking name helpers.
+ */
+const char *motors_status_to_string(MotorsStatus status);
 
-const char *tracking_to_string(TrackingMode tracking);
+const char *motors_tracking_to_string(TrackingMode tracking);
 
-TrackingMode tracking_from_string(const char *value);
+TrackingMode motors_tracking_from_string(const char *value);
 
-const char *tracking_valid_values(void);
+const char *motors_tracking_valid_values(void);
 
 /* Move both axes to absolute angles in degrees. */
 MotorResultCode motors_slew_to_angle(float ra_deg, float dec_deg, int speed_rate, float lat);
@@ -132,3 +159,20 @@ MotorResultCode motors_slew_to_angle(float ra_deg, float dec_deg, int speed_rate
 MotorResultCode motors_slew_axis_ra(float degrees, int speed_rate, float lat);
 
 MotorResultCode motors_slew_axis_dec(float degrees, int speed_rate, float lat);
+
+/*
+ * Enqueue a PulseGuide command.  The motion task dequeues and executes
+ * it — no direct state writes from the caller.  Works whether tracking
+ * is active or not.
+ *
+ * axis: 0 = RA, 1 = DEC
+ * offset_dps: signed angular speed offset in deg/s
+ * duration_ms: guide pulse duration in milliseconds
+ */
+void motors_pulse_guide_start(int axis, float offset_dps, uint32_t duration_ms);
+
+/*
+ * Return true if a PulseGuide is active on either axis.
+ * Reads motors_state.guiding — written exclusively by the motion task.
+ */
+bool motors_is_pulse_guiding(void);

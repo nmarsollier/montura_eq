@@ -29,6 +29,8 @@ idf_component_register(
         "motors/motors_rmt.c"
         "motors/motors_command_queue.c"
         "motors/motors_motion_task.c"
+        "motors/motors_pulse_guide.c"
+        "motors/motors_is_pulse_guiding.c"
 
         "mount/mount.c"
         "mount/mount_coordinate_tools.c"
@@ -47,6 +49,7 @@ idf_component_register(
         "mount/mount_set_tracking.c"
         "mount/mount_unpark.c"
         "mount/mount_get_visible_status_data.c"
+        "mount/mount_pulse_guide.c"
 
         "wifi/wifi.c"
         "wifi/wifi_configure_home_wifi.c"
@@ -91,6 +94,7 @@ idf_component_register(
         "alpaca_bridge/alpaca_bridge_target.c"
         "alpaca_bridge/alpaca_bridge_tracking_rate.c"
         "alpaca_bridge/alpaca_bridge_utc_date.c"
+        "alpaca_bridge/alpaca_bridge_guide_rate.c"
         "rest_alpaca/rest_alpaca_canfindhome_handler.c"
         "rest_alpaca/rest_alpaca_canmoveaxis_handler.c"
         "rest_alpaca/rest_alpaca_canpark_handler.c"

@@ -1,0 +1,28 @@
+# sdkconfig.defaults — project-specific overrides for Montura
+# Applied automatically by idf.py build on top of ESP-IDF defaults.
+
+# Flash: ESP32-S3 N16R8 has 16 MB
+CONFIG_ESPTOOLPY_FLASHSIZE_16MB=y
+CONFIG_ESPTOOLPY_FLASHSIZE="16MB"
+
+# Partition table: large single-app (3 MB factory partition)
+CONFIG_PARTITION_TABLE_SINGLE_APP_LARGE=y
+CONFIG_PARTITION_TABLE_FILENAME="partitions_singleapp_large.csv"
+
+# TinyUSB: NCM network mode
+CONFIG_TINYUSB_NET_MODE_NCM=y
+CONFIG_TINYUSB_NCM_OUT_NTB_BUFF_MAX_SIZE=5120
+CONFIG_TINYUSB_NCM_IN_NTB_BUFF_MAX_SIZE=5120
+
+# TinyUSB: custom USB descriptors
+CONFIG_TINYUSB_DESC_CUSTOM_VID=0x303A
+CONFIG_TINYUSB_DESC_CUSTOM_PID=0x4001
+CONFIG_TINYUSB_DESC_MANUFACTURER_STRING="Montura"
+CONFIG_TINYUSB_DESC_PRODUCT_STRING="Mount USB Ethernet"
+CONFIG_TINYUSB_DESC_SERIAL_STRING="000001"
+
+# LWIP: more sockets for multiple HTTP servers + Alpaca
+CONFIG_LWIP_MAX_SOCKETS=32
+
+# SNTP: multiple servers for redundancy
+CONFIG_LWIP_SNTP_MAX_SERVERS=3

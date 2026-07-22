@@ -56,7 +56,13 @@ void setup_init(void) {
 
     mount_init();
 
-    motors_init();
+    esp_err_t motors_err = motors_init();
+    if (motors_err != ESP_OK) {
+        ESP_LOGE(TAG, "motors_init failed: %s — mount disabled",
+                 esp_err_to_name(motors_err));
+        led_set_state(LED_STATE_ERROR);
+        /* Continue boot — REST/network still functional for diagnostics. */
+    }
 
     /*
      * UART / TMC error: permanent in practice because no code path

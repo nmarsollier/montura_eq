@@ -54,8 +54,8 @@ esp_err_t rest_status_handler(httpd_req_t *request) {
             "\"is_home\":%s"
             "}";
 
-    const char *status = status_to_string(data.status);
-    const char *tracking = tracking_to_string(data.tracking);
+    const char *status = motors_status_to_string(data.status);
+    const char *tracking = motors_tracking_to_string(data.tracking);
     char dec_sign = data.dec.sign >= 0 ? '+' : '-';
     bool wifi_ap = wifi_is_setup_ap_started();
 

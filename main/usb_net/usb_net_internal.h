@@ -4,10 +4,6 @@
 #include <stdint.h>
 
 #include "esp_err.h"
-#include "esp_netif.h"
-
-#include "lwip/err.h"
-#include "lwip/netif.h"
 
 /* ── IP / DHCP configuration ───────────────────────────────── */
 
@@ -28,12 +24,9 @@
 
 /* ── lwIP / driver helpers ─────────────────────────────────── */
 
-err_t      usb_net_lwip_init(struct netif *netif);
 esp_err_t  usb_net_lwip_input(void *netif_handle, void *buffer, size_t len, void *l2_buff);
 esp_err_t  usb_net_transmit(void *driver_handle, void *buffer, size_t len);
 void       usb_net_free_rx_buffer(void *driver_handle, void *buffer);
-
-void       usb_net_set_recv_netif(esp_netif_t *netif);
 
 /* ── TinyUSB NCM callbacks (defined in usb_net_init.c) ─────── */
 

@@ -31,7 +31,8 @@ bool alpaca_bridge_get_is_parked(void) {
  */
 bool alpaca_bridge_get_is_home(void) {
     MotorsState s = motors_current_state();
+    float ra = motors_get_ra_deg();
+    float dec = motors_get_dec_deg();
     return s.status == MOTORS_STATUS_READY &&
-           fabsf(s.ra_position) < 1.0f &&
-           fabsf(s.dec_position) < 1.0f;
+           fabsf(ra) < 1.0f && fabsf(dec) < 1.0f;
 }

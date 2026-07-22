@@ -5,13 +5,16 @@
 #include "motors.h"
 #include "motors_internal.h"
 
+#include "esp_log.h"
+#include "esp_err.h"
+
 /*
- * Default motors state — positions in degrees, home = alignment reference.
+ * Default motors state — positions in microsteps, home = 0.
  * Axis limits are configured via .limits (see MotorsState).
  */
 MotorsState motors_state = {
-    .ra_position = 0.0f,
-    .dec_position = 0.0f,
+    .ra_steps = 0,
+    .dec_steps = 0,
     .status = MOTORS_STATUS_READY,
     .tracking = TRACKING_NONE,
     .ra_speed = 0.0f,
@@ -24,9 +27,24 @@ MotorsState motors_state = {
     },
 };
 
-void motors_init(void) {
-    motors_hw_init();       /* GPIOs DIR + ENABLE + TMC UART */
-    motors_rmt_init();      /* RMT channels for STEP pulses (RA + DEC) */
+esp_err_t motors_init(void) {
+    esp_err_t err;
+
+    err = motors_hw_init();
+    if (err != ESP_OK) {
+        ESP_LOGE("MOTORS_INIT", "motors_hw_init: %s", esp_err_to_name(err));
+        motors_state.status = MOTORS_STATUS_DISABLED;
+        return err;
+    }
+
+    err = motors_rmt_init();
+    if (err != ESP_OK) {
+        ESP_LOGE("MOTORS_INIT", "motors_rmt_init: %s", esp_err_to_name(err));
+        motors_state.status = MOTORS_STATUS_DISABLED;
+        return err;
+    }
+
     motors_queue_init();
     motors_motion_task_init();
+    return ESP_OK;
 }

@@ -13,8 +13,7 @@
 #include "motors/motors.h"
 
 MountResult alpaca_bridge_set_park(void) {
-    MotorsState s = motors_current_state();
-    alpaca_bridge_state.park_ra_deg = s.ra_position;
-    alpaca_bridge_state.park_dec_deg = s.dec_position;
+    alpaca_bridge_state.park_ra_deg = motors_get_ra_deg();
+    alpaca_bridge_state.park_dec_deg = motors_get_dec_deg();
     return mount_result_ok();
 }

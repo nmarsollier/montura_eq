@@ -14,8 +14,7 @@
 #include "mount.h"
 
 int alpaca_bridge_get_side_of_pier(void) {
-    MotorsState s = motors_current_state();
-    return (s.dec_position >= 0.0f) ? 0 : 1;
+    return (motors_get_dec_deg() >= 0.0f) ? 0 : 1;
 }
 
 MountResult alpaca_bridge_set_side_of_pier(int side) {

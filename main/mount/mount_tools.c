@@ -12,14 +12,14 @@
  * motor position (axis degrees).  RA hour = axis_deg / 15.
  */
 float mount_get_ra_hours(void) {
-    MotorsState s = motors_current_state();
-    AxisCoordinates axis = {.ra_axis_deg = s.ra_position, .dec_axis_deg = s.dec_position};
+    AxisCoordinates axis = {.ra_axis_deg = motors_get_ra_deg(),
+                            .dec_axis_deg = motors_get_dec_deg()};
     return axis_to_equatorial(axis).ra_hours;
 }
 
 float mount_get_dec_deg(void) {
-    MotorsState s = motors_current_state();
-    AxisCoordinates axis = {.ra_axis_deg = s.ra_position, .dec_axis_deg = s.dec_position};
+    AxisCoordinates axis = {.ra_axis_deg = motors_get_ra_deg(),
+                            .dec_axis_deg = motors_get_dec_deg()};
     return axis_to_equatorial(axis).dec_deg;
 }
 

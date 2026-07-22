@@ -45,9 +45,9 @@ static MotorResultCode motors_slew_axis_impl(float ra_delta_deg, float dec_delta
  * Pauses and resumes tracking automatically when active.
  */
 MotorResultCode motors_slew_axis_ra(float degrees, int speed_rate, float lat) {
-    if (!motors_is_valid_ra(motors_state.ra_position + degrees)) {
+    if (!motors_is_valid_ra(motors_get_ra_deg() + degrees)) {
         ESP_LOGW(TAG, "Rejected RA move: out of range (%.3f)",
-                 motors_state.ra_position + degrees);
+                 motors_get_ra_deg() + degrees);
         return MOTOR_ERR_OUT_OF_RANGE;
     }
     motors_state.ra_speed = motors_get_slewing_speed(speed_rate);
@@ -62,9 +62,9 @@ MotorResultCode motors_slew_axis_ra(float degrees, int speed_rate, float lat) {
  * Pauses and resumes tracking automatically when active.
  */
 MotorResultCode motors_slew_axis_dec(float degrees, int speed_rate, float lat) {
-    if (!motors_is_valid_dec(motors_state.dec_position + degrees)) {
+    if (!motors_is_valid_dec(motors_get_dec_deg() + degrees)) {
         ESP_LOGW(TAG, "Rejected DEC move: out of range (%.3f)",
-                 motors_state.dec_position + degrees);
+                 motors_get_dec_deg() + degrees);
         return MOTOR_ERR_OUT_OF_RANGE;
     }
     motors_state.dec_speed = motors_get_slewing_speed(speed_rate);

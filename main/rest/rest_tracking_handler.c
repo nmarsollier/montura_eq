@@ -20,11 +20,11 @@
 esp_err_t rest_tracking_handler(httpd_req_t *request) {
     HttpRequestBody body = http_request_read_body(request);
     JsonStringResult tracking_text = json_get_string(body.value, "tracking");
-    TrackingMode tracking = tracking_from_string(tracking_text.value);
+    TrackingMode tracking = motors_tracking_from_string(tracking_text.value);
 
     if (!tracking_text.ok) {
         static const char format[] = "Missing or invalid 'tracking'. Valid values: %s";
-        const char *valid = tracking_valid_values();
+        const char *valid = motors_tracking_valid_values();
 
         char message[strlen(valid) + sizeof(format)];
         snprintf(message, sizeof(message), format, valid);

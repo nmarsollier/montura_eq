@@ -10,8 +10,8 @@
 VisibleStatusData mount_get_visible_status(void) {
     MotorsState pos = motors_current_state();
     AxisCoordinates axis = {
-        .ra_axis_deg = pos.ra_position,
-        .dec_axis_deg = pos.dec_position
+        .ra_axis_deg = motors_get_ra_deg(),
+        .dec_axis_deg = motors_get_dec_deg()
     };
 
     EquatorialCoordinates eq = axis_to_equatorial(axis);

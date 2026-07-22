@@ -4,29 +4,23 @@
  */
 #include "usb_net_internal.h"
 
-#include "lwip/etharp.h"
-#include "lwip/ethip6.h"
+#include "esp_log.h"
+
 #include "lwip/netif.h"
 #include "lwip/pbuf.h"
 
 #include "freertos/FreeRTOS.h"
 #include "tinyusb_net.h"
 
-void usb_net_set_recv_netif(esp_netif_t *netif) { (void)netif; }
+static const char *TAG = "USB_NET_DATA";
 
-err_t usb_net_lwip_init(struct netif *netif)
-{
-    netif->name[0] = 'u'; netif->name[1] = 's';
-    netif->hwaddr_len = 6;
-    netif->mtu = USB_NET_MTU;
-    netif->flags = NETIF_FLAG_BROADCAST | NETIF_FLAG_ETHARP | NETIF_FLAG_ETHERNET;
-    netif->output = etharp_output;
-#if LWIP_IPV6
-    netif->output_ip6 = ethip6_output;
-#endif
-    netif->linkoutput = NULL;
-    return ERR_OK;
-}
+/*
+ * lwIP calls usb_net_transmit() from its TCP/IP thread.  A long timeout
+ * would stall the entire stack (WiFi included).  100 ms is enough for the
+ * TinyUSB task to process a deferred send under normal conditions while
+ * keeping lwIP responsive — the USB frame interval is 1 ms in Full Speed.
+ */
+#define USB_NET_TX_TIMEOUT_MS  100
 
 esp_err_t usb_net_lwip_input(void *netif_handle, void *buffer, size_t len, void *l2_buff)
 {
@@ -43,7 +37,22 @@ esp_err_t usb_net_lwip_input(void *netif_handle, void *buffer, size_t len, void 
 esp_err_t usb_net_transmit(void *driver_handle, void *buffer, size_t len)
 {
     if (!buffer || !len) return ESP_ERR_INVALID_ARG;
-    return tinyusb_net_send_sync(buffer, (uint16_t)len, NULL, pdMS_TO_TICKS(5000));
+
+    esp_err_t r = tinyusb_net_send_sync(buffer, (uint16_t)len, NULL,
+                                         pdMS_TO_TICKS(USB_NET_TX_TIMEOUT_MS));
+
+    /* ESP_ERR_INVALID_STATE means tud_mounted() == false — the USB cable
+     * was unplugged.  Log it so the disconnect is visible in diagnostics. */
+    if (r == ESP_ERR_INVALID_STATE) {
+        ESP_LOGW(TAG, "TX dropped: USB not mounted");
+    }
+
+    return r;
 }
 
-void usb_net_free_rx_buffer(void *driver_handle, void *buffer) {}
+void usb_net_free_rx_buffer(void *driver_handle, void *buffer)
+{
+    /* NCM mode manages RX buffers internally via TinyUSB — nothing
+     * to free here.  This callback satisfies the esp_netif driver
+     * interface contract. */
+}

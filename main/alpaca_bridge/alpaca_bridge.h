@@ -91,3 +91,9 @@ MountResult alpaca_bridge_set_slew_settle_time(int seconds);
 
 /* Park position. */
 MountResult alpaca_bridge_set_park(void);
+
+/* Guide rates (deg/s). */
+float alpaca_bridge_get_guide_rate_ra(void);
+float alpaca_bridge_get_guide_rate_dec(void);
+void alpaca_bridge_set_guide_rate_ra(float rate_dps);
+void alpaca_bridge_set_guide_rate_dec(float rate_dps);

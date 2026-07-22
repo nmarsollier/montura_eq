@@ -11,7 +11,7 @@
  * Status string helpers live here so the motors module remains the canonical
  * source for mount state names.
  */
-const char *status_to_string(MotorsStatus status) {
+const char *motors_status_to_string(MotorsStatus status) {
     switch (status) {
         case MOTORS_STATUS_READY:
             return "ready";
@@ -32,7 +32,7 @@ const char *status_to_string(MotorsStatus status) {
  * Tracking string helpers live here so REST and UI layers use the same
  * canonical values as the motors module.
  */
-const char *tracking_to_string(TrackingMode tracking) {
+const char *motors_tracking_to_string(TrackingMode tracking) {
     switch (tracking) {
         case TRACKING_NONE:
             return "none";
@@ -47,7 +47,7 @@ const char *tracking_to_string(TrackingMode tracking) {
     }
 }
 
-TrackingMode tracking_from_string(const char *value) {
+TrackingMode motors_tracking_from_string(const char *value) {
     if (value == NULL) {
         return TRACKING_NONE;
     }
@@ -71,7 +71,7 @@ TrackingMode tracking_from_string(const char *value) {
     return TRACKING_NONE;
 }
 
-const char *tracking_valid_values(void) {
+const char *motors_tracking_valid_values(void) {
     static char buffer[35];
     static bool initialized = false;
 
@@ -80,10 +80,10 @@ const char *tracking_valid_values(void) {
     }
 
     const char *values[4];
-    values[0] = tracking_to_string(TRACKING_NONE);
-    values[1] = tracking_to_string(TRACKING_SIDEREAL);
-    values[2] = tracking_to_string(TRACKING_LUNAR);
-    values[3] = tracking_to_string(TRACKING_SOLAR);
+    values[0] = motors_tracking_to_string(TRACKING_NONE);
+    values[1] = motors_tracking_to_string(TRACKING_SIDEREAL);
+    values[2] = motors_tracking_to_string(TRACKING_LUNAR);
+    values[3] = motors_tracking_to_string(TRACKING_SOLAR);
 
     string_join(buffer, sizeof(buffer), values, 4, "|", "[", "]");
     initialized = true;
@@ -100,4 +100,12 @@ bool motors_is_valid_ra(float value) {
 
 bool motors_is_valid_dec(float value) {
     return value >= motors_state.limits.dec_min && value <= motors_state.limits.dec_max;
+}
+
+bool motors_is_valid_ra_steps(int64_t steps) {
+    return motors_is_valid_ra(motors_steps_to_deg(steps));
+}
+
+bool motors_is_valid_dec_steps(int64_t steps) {
+    return motors_is_valid_dec(motors_steps_to_deg(steps));
 }

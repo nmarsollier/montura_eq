@@ -14,9 +14,8 @@ MountResult mount_slew_to_coordinates(float ra, float dec, int speed_rate) {
         .dec_deg = dec
     };
 
-    MotorsState ms = motors_current_state();
-    AxisCoordinates current = { .ra_axis_deg = ms.ra_position,
-                                .dec_axis_deg = ms.dec_position };
+    AxisCoordinates current = { .ra_axis_deg = motors_get_ra_deg(),
+                                .dec_axis_deg = motors_get_dec_deg() };
 
     AxisCoordinates axis;
     if (!equatorial_to_axis(eq, current, &axis)) {

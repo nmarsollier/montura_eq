@@ -18,6 +18,17 @@ typedef struct {
     const char *message;
 } MountResult;
 
+/*
+ * Astronomical guide directions — Alpaca PulseGuide input.
+ * Mapped to physical axis signs inside the mount layer.
+ */
+typedef enum {
+    GUIDE_DIRECTION_NORTH = 0,
+    GUIDE_DIRECTION_SOUTH = 1,
+    GUIDE_DIRECTION_EAST = 2,
+    GUIDE_DIRECTION_WEST = 3,
+} GuideDirection;
+
 /* Coordinate types. */
 typedef struct {
     float ra_hours;
@@ -182,4 +193,25 @@ float mount_get_dec_deg(void);
 /* Compute the current Local Sidereal Time for the configured site. */
 float mount_get_lst(void);
 
-TrackingMode tracking_from_string(const char *value);
+TrackingMode motors_tracking_from_string(const char *value);
+
+/*
+ * mount_pulse_guide
+ * -----------------
+ * Execute a guide pulse on the specified astronomical direction for the
+ * given duration in milliseconds.  Rejected if the mount is slewing,
+ * moving, parked, or disabled.  Coexists with tracking.
+ *
+ * Guide rate is taken from the stored alpaca_bridge guide rate (deg/s).
+ */
+MountResult mount_pulse_guide(GuideDirection direction, uint32_t duration_ms);
+
+/*
+ * mount_set_guide_rate / mount_get_guide_rate
+ * -------------------------------------------
+ * Store or retrieve the guide rate for the given axis in degrees/second.
+ */
+void mount_set_guide_rate_ra(float rate_dps);
+void mount_set_guide_rate_dec(float rate_dps);
+float mount_get_guide_rate_ra(void);
+float mount_get_guide_rate_dec(void);

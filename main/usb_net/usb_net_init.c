@@ -53,28 +53,71 @@ static esp_err_t create_netif(void)
     esp_read_mac(mac, ESP_MAC_WIFI_STA);
     mac[0] |= 0x02;
     esp_netif_set_mac(s_netif, mac);
-    usb_net_set_recv_netif(s_netif);
 
     ESP_LOGI(TAG, "USB netif MAC %02x:%02x:%02x:%02x:%02x:%02x",
              mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
     return ESP_OK;
 }
 
-static void configure_dhcp(void)
+static esp_err_t configure_dhcp(void)
 {
     uint32_t lease = USB_NET_DHCP_LEASE_MINUTES * 60;
-    esp_netif_dhcps_option(s_netif, ESP_NETIF_OP_SET, ESP_NETIF_IP_ADDRESS_LEASE_TIME, &lease, sizeof(lease));
+    ESP_RETURN_ON_ERROR(
+        esp_netif_dhcps_option(s_netif, ESP_NETIF_OP_SET,
+                               ESP_NETIF_IP_ADDRESS_LEASE_TIME, &lease, sizeof(lease)),
+        TAG, "dhcps lease");
+
     dhcps_lease_t pool = {
-        .start_ip.addr = ESP_IP4TOADDR(USB_NET_IP_OCTET1, USB_NET_IP_OCTET2, USB_NET_IP_OCTET3, USB_NET_DHCP_START_O4),
-        .end_ip.addr   = ESP_IP4TOADDR(USB_NET_IP_OCTET1, USB_NET_IP_OCTET2, USB_NET_IP_OCTET3, USB_NET_DHCP_END_O4),
+        .enable       = true,
+        .start_ip.addr = ESP_IP4TOADDR(USB_NET_IP_OCTET1, USB_NET_IP_OCTET2,
+                                        USB_NET_IP_OCTET3, USB_NET_DHCP_START_O4),
+        .end_ip.addr   = ESP_IP4TOADDR(USB_NET_IP_OCTET1, USB_NET_IP_OCTET2,
+                                        USB_NET_IP_OCTET3, USB_NET_DHCP_END_O4),
     };
-    esp_netif_dhcps_option(s_netif, ESP_NETIF_OP_SET, ESP_NETIF_REQUESTED_IP_ADDRESS, &pool, sizeof(pool));
+    ESP_RETURN_ON_ERROR(
+        esp_netif_dhcps_option(s_netif, ESP_NETIF_OP_SET,
+                               ESP_NETIF_REQUESTED_IP_ADDRESS, &pool, sizeof(pool)),
+        TAG, "dhcps pool");
+
+    return ESP_OK;
+}
+
+/*
+ * TinyUSB device event → esp_netif link state.
+ *
+ * tud_mount_cb() fires when the host completes enumeration (SetConfiguration).
+ * tud_umount_cb() fires on cable disconnect or bus reset.
+ * Only then do we tell lwIP the link is up/down — the DHCP server runs
+ * continuously so it can serve a reconnecting host without re-init.
+ */
+static void usb_net_event_cb(tinyusb_event_t *event, void *arg)
+{
+    esp_netif_t *netif = (esp_netif_t *)arg;
+
+    switch (event->id) {
+    case TINYUSB_EVENT_ATTACHED:
+        ESP_LOGI(TAG, "USB host attached, link up");
+        esp_netif_action_connected(netif, NULL, 0, NULL);
+        break;
+    case TINYUSB_EVENT_DETACHED:
+        ESP_LOGW(TAG, "USB host detached, link down");
+        esp_netif_action_disconnected(netif, NULL, 0, NULL);
+        break;
+    default:
+        break;
+    }
 }
 
 static esp_err_t init_tinyusb(void)
 {
-    const tinyusb_config_t cfg = TINYUSB_DEFAULT_CONFIG();
-    ESP_RETURN_ON_ERROR(tinyusb_driver_install(&cfg), TAG, "tinyusb_driver_install");
+    esp_err_t err;
+    const tinyusb_config_t cfg = TINYUSB_DEFAULT_CONFIG(usb_net_event_cb, s_netif);
+
+    err = tinyusb_driver_install(&cfg);
+    if (err != ESP_OK) {
+        ESP_LOGE(TAG, "tinyusb_driver_install: %s", esp_err_to_name(err));
+        return err;
+    }
 
     tinyusb_net_config_t net_cfg = {
         .on_recv_callback = usb_net_tinyusb_recv_cb,
@@ -85,7 +128,13 @@ static esp_err_t init_tinyusb(void)
     esp_read_mac(net_cfg.mac_addr, ESP_MAC_WIFI_STA);
     net_cfg.mac_addr[0] |= 0x02;
 
-    ESP_RETURN_ON_ERROR(tinyusb_net_init(&net_cfg), TAG, "tinyusb_net_init");
+    err = tinyusb_net_init(&net_cfg);
+    if (err != ESP_OK) {
+        ESP_LOGE(TAG, "tinyusb_net_init: %s", esp_err_to_name(err));
+        tinyusb_driver_uninstall();
+        return err;
+    }
+
     ESP_LOGI(TAG, "TinyUSB NCM network class ready");
     return ESP_OK;
 }
@@ -93,21 +142,68 @@ static esp_err_t init_tinyusb(void)
 esp_err_t usb_net_init(void)
 {
     esp_err_t r;
-    if ((r = create_netif()) != ESP_OK)  { ESP_LOGE(TAG, "netif: %s", esp_err_to_name(r)); return r; }
-    if ((r = init_tinyusb()) != ESP_OK)  { ESP_LOGE(TAG, "tusb: %s", esp_err_to_name(r));  return r; }
+
+    if (s_netif) {
+        ESP_LOGW(TAG, "already initialised, skipping");
+        return ESP_ERR_INVALID_STATE;
+    }
+
+    if ((r = create_netif()) != ESP_OK) {
+        ESP_LOGE(TAG, "netif: %s", esp_err_to_name(r));
+        return r;                                    /* nothing to undo */
+    }
+    if ((r = init_tinyusb()) != ESP_OK) {
+        ESP_LOGE(TAG, "tusb: %s", esp_err_to_name(r));
+        goto rollback_netif;                         /* netif created, tusb failed */
+    }
 
     esp_netif_action_start(s_netif, NULL, 0, NULL);
-    esp_netif_action_connected(s_netif, NULL, 0, NULL);
-    configure_dhcp();
+
+    /* DHCP server starts with defaults via esp_netif_action_start().
+     * esp_netif_dhcps_option(ESP_NETIF_OP_SET) is rejected while the
+     * server is running, so stop → configure → restart. */
+    r = esp_netif_dhcps_stop(s_netif);
+    if (r != ESP_OK) {
+        ESP_LOGE(TAG, "dhcps_stop: %s", esp_err_to_name(r));
+        goto rollback_tusb;
+    }
+    if ((r = configure_dhcp()) != ESP_OK) {
+        ESP_LOGE(TAG, "dhcp cfg: %s", esp_err_to_name(r));
+        goto rollback_tusb;                          /* netif + tusb up, dhcp failed */
+    }
+    r = esp_netif_dhcps_start(s_netif);
+    if (r != ESP_OK) {
+        ESP_LOGE(TAG, "dhcps_start: %s", esp_err_to_name(r));
+        goto rollback_tusb;
+    }
+
     return ESP_OK;
+
+rollback_tusb:
+    /* Best-effort teardown — don't overwrite the original error. */
+    tinyusb_net_deinit();
+    tinyusb_driver_uninstall();
+rollback_netif:
+    esp_netif_action_stop(s_netif, NULL, 0, NULL);
+    esp_netif_destroy(s_netif);
+    s_netif = NULL;
+    return r;
 }
 
 /* ── TinyUSB NCM callbacks ─────────────────────────────────── */
 
 esp_err_t usb_net_tinyusb_recv_cb(void *buffer, uint16_t len, void *ctx)
 {
-    if (s_netif) esp_netif_receive(s_netif, buffer, len, NULL);
-    return ESP_OK;
+    esp_netif_t *netif = (esp_netif_t *)ctx;
+    if (!netif) return ESP_ERR_INVALID_STATE;
+
+    esp_err_t r = esp_netif_receive(netif, buffer, len, NULL);
+    if (r != ESP_OK) {
+        ESP_LOGE(TAG, "esp_netif_receive: %s", esp_err_to_name(r));
+    }
+    /* The esp_tinyusb wrapper discards this return value, but we
+     * report the actual result for correctness. */
+    return r;
 }
 
 void usb_net_tinyusb_init_cb(void *ctx)
