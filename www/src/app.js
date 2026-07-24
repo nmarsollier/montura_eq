@@ -81,6 +81,9 @@ function mountApp() {
         home() {
             this.apiPost('/api/home').then(() => this.fetchStatus());
         },
+        zeroPosition() {
+            this.apiPost('/api/zero').then(() => this.fetchStatus());
+        },
         park() {
             this.apiPost('/api/park').then(() => this.fetchStatus());
         },
@@ -97,7 +100,7 @@ function mountApp() {
         joyRates: {ra: 0, dec: 0},
 
         joyStart(axis, dir) {
-            const dps = 16.0;  // speed profile 4
+            const dps = 8.0;  // deg/s, clamped to MOTORS_MAX_SLEW_SPEED_DPS
             this.joyRates[axis] = dir * dps;
             const body = {ra_rate: this.joyRates.ra, dec_rate: this.joyRates.dec};
             this.apiPost('/api/move-axis-speed', body);

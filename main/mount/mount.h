@@ -159,6 +159,12 @@ MountResult mount_set_system_time(const char *iso_time);
 MountResult mount_home(void);
 
 /*
+ * Set the current physical position as the new zero reference.
+ * Both axis step counters reset to 0. The mount must be READY.
+ */
+MountResult mount_set_zero(void);
+
+/*
  * mount_move_axis
  * ---------------
  * Request a small relative move on a single physical axis. Parameters:

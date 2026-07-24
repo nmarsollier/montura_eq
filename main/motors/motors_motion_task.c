@@ -52,7 +52,7 @@ static const char *TAG = "MOTORS_MOTION_TASK";
  *
  * On abort / timeout the position is optimistically advanced by the
  * full batch.  Keeping this small caps the worst-case position error.
- * 12 steps × 0.0035°/step ≈ 0.04° with the current gear ratio.
+ * 12 steps × ~0.00028°/step ≈ 0.003° with the current gear ratio.
  */
 #define RMT_BATCH_MAX_STEPS  12U
 

@@ -33,6 +33,8 @@ esp_err_t rest_unpark_handler(httpd_req_t *request);
 
 esp_err_t rest_home_handler(httpd_req_t *request);
 
+esp_err_t rest_zero_handler(httpd_req_t *request);
+
 esp_err_t rest_settings_handler(httpd_req_t *request);
 
 esp_err_t rest_wifi_handler(httpd_req_t *request);

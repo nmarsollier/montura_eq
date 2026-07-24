@@ -3,6 +3,8 @@
  * Purpose: request continuous single-axis speed motion.
  * Positive rate = forward, negative = reverse, zero = stop that axis.
  * Used by Alpaca MoveAxis, joystick, and guiding.
+ *
+ * Speeds are clamped to [-MOTORS_MAX_SLEW_SPEED_DPS, +MOTORS_MAX_SLEW_SPEED_DPS].
  */
 #include "motors.h"
 #include "motors_internal.h"
@@ -12,6 +14,13 @@ void motors_set_move_axis_speed(float ra_speed, float dec_speed) {
         motors_stop();
         return;
     }
+
+    /* Clamp to hardware-safe maximum. */
+    float max_dps = MOTORS_MAX_SLEW_SPEED_DPS;
+    if (ra_speed > max_dps) ra_speed = max_dps;
+    if (ra_speed < -max_dps) ra_speed = -max_dps;
+    if (dec_speed > max_dps) dec_speed = max_dps;
+    if (dec_speed < -max_dps) dec_speed = -max_dps;
 
     MotionCommand cmd = {
         .type = MOTION_CMD_MOVE_AXIS,

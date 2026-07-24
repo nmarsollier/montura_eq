@@ -32,7 +32,23 @@
 
 /* ── Target microstep resolution ───────────────────────────── */
 
-#define TMC_TARGET_MICROSTEPS  128
+#define TMC_TARGET_MICROSTEPS  32
+
+/* Convert TMC_TARGET_MICROSTEPS to the MRES register field.
+ * TMC2209 MRES mapping: 256→0, 128→1, 64→2, 32→3, 16→4, 8→5, 4→6, 2→7, 1→8 */
+static uint8_t tmc_microsteps_to_mres(uint16_t ms) {
+    switch (ms) {
+        case 256: return 0;
+        case 128: return 1;
+        case 64:  return 2;
+        case 32:  return 3;
+        case 16:  return 4;
+        case 8:   return 5;
+        case 4:   return 6;
+        case 2:   return 7;
+        default:  return 8;
+    }
+}
 
 static const char *TAG = "TMC_INIT";
 
@@ -46,8 +62,8 @@ typedef struct {
 } TmcAxis;
 
 static const TmcAxis tmc_axes[] = {
-    { .name = "RA",  .address = 0x03, .irun = 15, .ihold = 8 },
-    { .name = "DEC", .address = 0x00, .irun = 12, .ihold = 6 },
+    { .name = "RA",  .address = 0x03, .irun = 21, .ihold = 12 },
+    { .name = "DEC", .address = 0x00, .irun = 18, .ihold = 8 },
 };
 
 /* ── UART helpers ──────────────────────────────────────────── */
@@ -126,10 +142,10 @@ static esp_err_t tmc_init_driver(const TmcAxis *axis)
         return result;
     }
 
-    /* CHOPCONF: MRES=1 (128 µsteps), SpreadCycle, interpolation to 256. */
+    /* CHOPCONF: dynamic MRES from TMC_TARGET_MICROSTEPS, SpreadCycle, interpolation to 256. */
     uint32_t chopconf = 0x10410153;      /* power-on default */
     chopconf &= ~(0x0FU << 24);          /* clear MRES */
-    chopconf |=  (1U << 24);             /* MRES = 1 → 128 µsteps */
+    chopconf |=  ((uint32_t)tmc_microsteps_to_mres(TMC_TARGET_MICROSTEPS) << 24);
     chopconf |=  (1U << 14);             /* SpreadCycle */
     chopconf |=  (1U << 28);             /* intpol → 256 µsteps */
 

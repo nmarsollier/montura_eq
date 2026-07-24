@@ -15,8 +15,7 @@
 
     <!-- ═══ Header ═══ -->
     <div class="header">
-        <h1 class="header-brand"><span>Monturita</span></h1>
-        <div class="header-sub">Non precision instruments Inc.</div>
+        <h1 class="header-brand"><span>Montura EQ</span></h1>
         <hr class="header-line">
     </div>
 
@@ -83,6 +82,7 @@
             <div class="row">
                 <button class="danger" @click="stop()">STOP</button>
                 <button @click="home()">HOME</button>
+                <button @click="zeroPosition()">ZERO</button>
                 <button @click="park()" x-show="!isParked">PARK</button>
                 <button @click="unpark()" x-show="isParked">UNPARK</button>
             </div>
@@ -250,7 +250,7 @@
          x-transition.opacity.duration.200ms></div>
 
     <!-- ═══ Footer ═══ -->
-    <footer>Monturita· SPA embebida · REST <code>/api/*</code></footer>
+    <footer>Montura EQ · SPA embebida · REST <code>/api/*</code></footer>
 
 </div>
 

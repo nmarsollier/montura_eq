@@ -3,8 +3,8 @@
  * Purpose: moves a single axis (0 = RA, 1 = DEC) continuously at the
  * given rate until Rate = 0 stops it.
  *
- * The Rate parameter uses our AxisRates range (1..4, matching the
- * slew speed profiles).  Zero stops.  Sign sets direction.
+ * Rate is in deg/s, clamped to [0, motors_get_slewing_speed(4)].
+ * Sign sets direction.
  */
 #include "rest_alpaca.h"
 #include "rest_alpaca_internal.h"

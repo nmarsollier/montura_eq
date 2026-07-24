@@ -23,7 +23,7 @@ static const char *TAG = "MOTORS_SLEW_TO_ANGLE";
  * Parameters:
  *   ra_deg   — target RA axis angle in degrees (validated against limits)
  *   dec_deg  — target DEC axis angle in degrees
- *   speed_rate — slew profile (1=2°/s, 2=8°/s, 3=16°/s, default=24°/s)
+ *   speed_rate — slew profile (1=1°/s, 2=3°/s, 3=6°/s, default=10°/s)
  *   lat      — site latitude (used to restore tracking direction)
  */
 MotorResultCode motors_slew_to_angle(float ra_deg, float dec_deg, int speed_rate, float lat) {

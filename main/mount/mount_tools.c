@@ -44,6 +44,8 @@ MountResult mount_result_ok() {
 
 MountResult motors_result_code_error_result(MotorResultCode rc) {
     switch (rc) {
+        case MOTOR_OK:
+            return mount_result_ok();
         case MOTOR_ERR_INVALID_AXIS:
             return mount_result_error("Invalid axis");
         case MOTOR_ERR_OUT_OF_RANGE:

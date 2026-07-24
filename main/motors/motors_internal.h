@@ -64,8 +64,10 @@ bool motors_is_valid_dec_steps(int64_t steps);
  * ========================================================================= */
 #define MOTOR_STEP_ANGLE_DEG     (1.8f)
 #define MOTOR_FULL_STEPS_PER_REV ((int)(360.0f / MOTOR_STEP_ANGLE_DEG))
-#define MOTOR_PULLEY_TEETH       (20)
-#define AXIS_PULLEY_TEETH        (80)
+#define TOTAL_GEAR_REDUCTION     (200.0f)  /* motor shaft turns : axis turns */
+
+/* Maximum safe slew speed in deg/s — hardware ceiling for this reduction. */
+#define MOTORS_MAX_SLEW_SPEED_DPS 10.0f
 
 /*
  * Motion calibration factor.
@@ -108,12 +110,15 @@ bool motors_is_valid_dec_steps(int64_t steps);
 /*
  * Get the active microstep count from the TMC2209 driver.
  * Reads the cached value verified against hardware registers during init.
- * Falls back to the compile-time default if the TMC is not yet initialised.
+ * Falls back to TMC_TARGET_MICROSTEPS if the TMC is not yet initialised.
+ * This value MUST match the TMC_TARGET_MICROSTEPS define in tmc_init.c.
  */
+#define MOTORS_FALLBACK_MICROSTEPS 32
+
 static inline uint16_t motors_get_microsteps(void) {
     extern uint16_t tmc2209_get_active_microsteps(void);
     uint16_t ms = tmc2209_get_active_microsteps();
-    return (ms > 0) ? ms : 128;
+    return (ms > 0) ? ms : MOTORS_FALLBACK_MICROSTEPS;
 }
 
 /*
@@ -124,7 +129,7 @@ static inline uint16_t motors_get_microsteps(void) {
 static inline float motors_get_deg_per_microstep(void) {
     return 360.0f / ((float) MOTOR_FULL_STEPS_PER_REV *
                      (float) motors_get_microsteps() *
-                     ((float) AXIS_PULLEY_TEETH / (float) MOTOR_PULLEY_TEETH) *
+                     TOTAL_GEAR_REDUCTION *
                      MOTION_CALIBRATION_FACTOR);
 }
 

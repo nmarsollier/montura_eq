@@ -120,6 +120,12 @@ void motors_park(void);
 void motors_home(float lat);
 
 /*
+ * Set the current physical position as the new zero reference.
+ * Both axis step counters are reset to 0.  Allowed only in READY state.
+ */
+MotorResultCode motors_set_zero(void);
+
+/*
  * Start continuous tracking according to the chosen `TrackingMode`.
  */
 MotorResultCode motors_start_tracking(TrackingMode mode);

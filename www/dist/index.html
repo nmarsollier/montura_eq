@@ -7,7 +7,7 @@
     <title>Montura EQ</title>
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='14' fill='%231a1a2e' stroke='%234fc3f7' stroke-width='2'/%3E%3Ccircle cx='16' cy='16' r='2' fill='%234fc3f7'/%3E%3Cline x1='16' y1='6' x2='16' y2='2' stroke='%234fc3f7' stroke-width='2'/%3E%3C/svg%3E">
     <style>/* ═══════════════════════════════════════════════════
-   Monturita — Velvet Dark Theme
+   Montura EQ — Velvet Dark Theme
    Paleta: negro, gris oscuro, rojo velvet
    ═══════════════════════════════════════════════════ */
 
@@ -590,8 +590,7 @@ footer code {
 
     <!-- ═══ Header ═══ -->
     <div class="header">
-        <h1 class="header-brand"><span>Monturita</span></h1>
-        <div class="header-sub">Non precision instruments Inc.</div>
+        <h1 class="header-brand"><span>Montura EQ</span></h1>
         <hr class="header-line">
     </div>
 
@@ -658,6 +657,7 @@ footer code {
             <div class="row">
                 <button class="danger" @click="stop()">STOP</button>
                 <button @click="home()">HOME</button>
+                <button @click="zeroPosition()">ZERO</button>
                 <button @click="park()" x-show="!isParked">PARK</button>
                 <button @click="unpark()" x-show="isParked">UNPARK</button>
             </div>
@@ -825,7 +825,7 @@ footer code {
          x-transition.opacity.duration.200ms></div>
 
     <!-- ═══ Footer ═══ -->
-    <footer>Monturita· SPA embebida · REST <code>/api/*</code></footer>
+    <footer>Montura EQ · SPA embebida · REST <code>/api/*</code></footer>
 
 </div>
 
@@ -912,6 +912,9 @@ footer code {
         home() {
             this.apiPost('/api/home').then(() => this.fetchStatus());
         },
+        zeroPosition() {
+            this.apiPost('/api/zero').then(() => this.fetchStatus());
+        },
         park() {
             this.apiPost('/api/park').then(() => this.fetchStatus());
         },
@@ -928,7 +931,7 @@ footer code {
         joyRates: {ra: 0, dec: 0},
 
         joyStart(axis, dir) {
-            const dps = 16.0;  // speed profile 4
+            const dps = 8.0;  // deg/s, clamped to MOTORS_MAX_SLEW_SPEED_DPS
             this.joyRates[axis] = dir * dps;
             const body = {ra_rate: this.joyRates.ra, dec_rate: this.joyRates.dec};
             this.apiPost('/api/move-axis-speed', body);

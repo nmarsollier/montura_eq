@@ -7,7 +7,7 @@
  *
  * Hardware: NEMA 17 stepper motors driven by TMC2209 in STEP/DIR mode
  * with UART-configured microstepping and hardware interpolation.
- * Gear reduction: MOTOR_PULLEY_TEETH:AXIS_PULLEY_TEETH (see motors_internal.h).
+ * Total gear reduction: 200:1 motor-to-axis (see motors_internal.h).
  */
 
 #include "driver/gpio.h"
