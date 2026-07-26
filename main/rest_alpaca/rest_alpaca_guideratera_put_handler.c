@@ -29,8 +29,8 @@ esp_err_t alpaca_guideratera_put_handler(httpd_req_t *req) {
     }
     free(val);
 
-    if (rate < 0.0f || rate > 15.0f) {
-        alpaca_response_error(req, 1025, "GuideRateRightAscension out of range (0-15 deg/s)", cid, stx);
+    if (rate < 0.0f || rate > 1.0f) {
+        alpaca_response_error(req, 1025, "GuideRateRightAscension out of range (0-1 deg/s)", cid, stx);
         return ESP_OK;
     }
 

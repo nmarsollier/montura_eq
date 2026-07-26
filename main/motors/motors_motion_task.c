@@ -3,8 +3,10 @@
  * Purpose: FreeRTOS motion task — consumes MotionCommands from the queue
  * and drives axis positions via RMT+DMA step pulse generation.
  *
- * The motion task is the SINGLE WRITER of motors_state position,
- * status, and tracking fields — all other code only reads them.
+ * The motion task is the sole writer of motors_state position fields
+ * (ra_steps, dec_steps) during slews and tracking.
+ * Status and tracking fields are updated cooperatively by the motion
+ * task, motors_stop(), motors_park(), and motors_enable().
  *
  * Two execution paths, dispatched by command type:
  *   slewing_loop_rmt  — distance-bounded, ramped accel/decel, batched RMT
@@ -65,22 +67,19 @@ static const char *TAG = "MOTORS_MOTION_TASK";
 
 TaskHandle_t motors_motion_task_handle = NULL;
 
-/*
- * Motion-active flag — written by external code (stop, park) to
- * signal the motion task to abort.  The motion task clears it.
- * Externed in motors_internal.h so motors_stop.c can set it.
- */
-bool motors_motion_active = false;
-
 /* --------------------------------------------------------------------------
- * Local motion state — active command being executed by the task.
+ * Motion state — active command being executed by the task.
+ *
+ * All fields are single-writer (motion task only) except `active`, which
+ * is set false by motors_motion_stop() from any task to signal abort.
  * -------------------------------------------------------------------------- */
 static struct {
+    bool active;               /* false → abort at next iteration */
     MotionCommandType active_cmd_type;
-    int64_t ra_target;    /* steps */
-    int64_t dec_target;   /* steps */
-    int64_t ra_start;     /* steps — captured at motion start (for ramps) */
-    int64_t dec_start;    /* steps */
+    int64_t ra_target;         /* steps */
+    int64_t dec_target;        /* steps */
+    int64_t ra_start;          /* steps — captured at motion start (for ramps) */
+    int64_t dec_start;         /* steps */
 
     /* PulseGuide state — single-writer (motion task only). */
     int64_t ra_guide_deadline_us;
@@ -199,14 +198,17 @@ static uint32_t step_period_ticks(float velocity_dps) {
 
 /* --------------------------------------------------------------------------
  * Stop the active motion loop from outside the motion task.
- * Aborts any in-flight RMT transmission so the motion task wakes
- * immediately and can check motors_motion_active.
+ * Aborts any in-flight RMT transmission and notifies the task so it
+ * wakes immediately and can check s_motion.active.
  *
  * Safe to call from any task.
  * -------------------------------------------------------------------------- */
 void motors_motion_stop(void) {
-    motors_motion_active = false;
+    s_motion.active = false;
     motors_rmt_abort_both();
+    if (motors_motion_task_handle) {
+        xTaskNotify(motors_motion_task_handle, 0, eNoAction);
+    }
 }
 
 /* --------------------------------------------------------------------------
@@ -235,7 +237,7 @@ static bool check_motion_conditions(void) {
         !ra_has_target && !dec_has_target) {
         motors_state.status = MOTORS_STATUS_READY;
         motors_state.tracking = TRACKING_NONE;
-        motors_motion_active = false;
+        s_motion.active = false;
 
         return false;
     }
@@ -244,7 +246,7 @@ static bool check_motion_conditions(void) {
     if (motors_state.tracking == TRACKING_NONE &&
         motors_state.status == MOTORS_STATUS_TRACKING) {
         motors_state.status = MOTORS_STATUS_READY;
-        motors_motion_active = false;
+        s_motion.active = false;
 
         return false;
     }
@@ -256,8 +258,8 @@ static bool check_motion_conditions(void) {
  * Command processing — handle one MotionCommand and set up motion state.
  *
  * Only motion-producing commands (SLEW, TRACK, MOVE_AXIS) go through
- * the queue.  Stop / park / disable / enable are handled directly
- * by their callers via motors_motion_stop() + motors_state update.
+ * the queue.  Stop / park / enable are handled directly by their
+ * callers via motors_motion_stop() + motors_state update.
  * -------------------------------------------------------------------------- */
 static void process_command(MotionCommand cmd) {
     s_motion.active_cmd_type = cmd.type;
@@ -280,7 +282,7 @@ static void process_command(MotionCommand cmd) {
             }
             s_motion.ra_start = motors_state.ra_steps;
             s_motion.dec_start = motors_state.dec_steps;
-            motors_motion_active = true;
+            s_motion.active = true;
 
             break;
 
@@ -305,7 +307,7 @@ static void process_command(MotionCommand cmd) {
             s_motion.dec_target = motors_state.dec_steps;
             s_motion.ra_start = motors_state.ra_steps;
             s_motion.dec_start = motors_state.dec_steps;
-            motors_motion_active = true;
+            s_motion.active = true;
 
             break;
 
@@ -328,7 +330,7 @@ static void process_command(MotionCommand cmd) {
 
             s_motion.ra_start = motors_state.ra_steps;
             s_motion.dec_start = motors_state.dec_steps;
-            motors_motion_active = true;
+            s_motion.active = true;
 
             break;
 
@@ -361,7 +363,7 @@ static void process_command(MotionCommand cmd) {
                 }
             }
             motors_state.guiding = true;
-            /* Don't set motors_motion_active — the existing loop handles it. */
+            /* Don't set s_motion.active — the existing loop handles it. */
             break;
     }
 }
@@ -425,13 +427,13 @@ static void slewing_loop_rmt(void) {
     uint32_t dec_period = MAX_STEP_PERIOD_TICKS;
     int64_t last_ramp_recalc_us = 0;
 
-    while (motors_motion_active) {
+    while (s_motion.active) {
         /*
          * 1. Throttled motion-conditions check — exit if target reached
          *    or tracking was stopped externally.
          */
         if (!check_motion_conditions()) break;
-        if (!motors_motion_active) break;
+        if (!s_motion.active) break;
 
         int64_t now = esp_timer_get_time();
 
@@ -563,7 +565,7 @@ static void slewing_loop_rmt(void) {
          *     start an unintended transmission on those re-enabled
          *     channels, physically moving the motor after the STOP.
          */
-        if (!motors_motion_active) {
+        if (!s_motion.active) {
             ESP_LOGW(TAG, "Motion aborted before transmit — position may be off by ≤%u steps",
                      RMT_BATCH_MAX_STEPS);
             break;
@@ -591,7 +593,7 @@ static void slewing_loop_rmt(void) {
                      esp_err_to_name(ra_tx_err),
                      esp_err_to_name(dec_tx_err));
             motors_rmt_abort_both();
-            motors_motion_active = false;
+            s_motion.active = false;
             motors_state.status = MOTORS_STATUS_READY;
             motors_state.tracking = TRACKING_NONE;
             break;
@@ -618,14 +620,14 @@ static void slewing_loop_rmt(void) {
                      (ra_wait_err == ESP_ERR_TIMEOUT) ? "timeout" : "error",
                      RMT_BATCH_MAX_STEPS);
             motors_rmt_abort_both();
-            motors_motion_active = false;
+            s_motion.active = false;
             motors_state.status = MOTORS_STATUS_READY;
             motors_state.tracking = TRACKING_NONE;
             break;
         }
 
         /* 8. External stop preemption — position already updated. */
-        if (!motors_motion_active) {
+        if (!s_motion.active) {
             ESP_LOGW(TAG, "Motion aborted — position may be off by ≤%u steps",
                      RMT_BATCH_MAX_STEPS);
             break;
@@ -645,7 +647,7 @@ static void slewing_loop_rmt(void) {
         if (ra_steps_done >= total_ra_steps && dec_steps_done >= total_dec_steps) {
             motors_state.status = MOTORS_STATUS_READY;
             motors_state.tracking = TRACKING_NONE;
-            motors_motion_active = false;
+            s_motion.active = false;
             break;
         }
     }
@@ -700,7 +702,7 @@ static void tracking_loop_rmt(void) {
     rmt_symbol_word_t ra_sym[RMT_BUFFER_SYMBOLS];
     rmt_symbol_word_t dec_sym[RMT_BUFFER_SYMBOLS];
 
-    while (motors_motion_active) {
+    while (s_motion.active) {
         int64_t now = esp_timer_get_time();
         double dt_s = (double)(now - last_time_us) / 1000000.0;
         last_time_us = now;
@@ -751,20 +753,20 @@ static void tracking_loop_rmt(void) {
             if (!motors_is_valid_ra_steps(next)) {
                 ESP_LOGW(TAG, "RA limit at %.3f deg",
                          (double)motors_steps_to_deg(motors_state.ra_steps));
-                motors_motion_active = false;
+                s_motion.active = false;
                 motors_state.status = MOTORS_STATUS_READY;
                 motors_state.tracking = TRACKING_NONE;
                 motors_state.guiding = false;
                 return;
             }
-            if (!motors_motion_active) { ra_phase = 0.0; return; }
+            if (!s_motion.active) { ra_phase = 0.0; return; }
 
             motors_rmt_encode_pulse(ra_sym);
             esp_err_t tx_err = motors_rmt_transmit_ra(ra_sym, 1);
             if (tx_err != ESP_OK) {
                 ESP_LOGE(TAG, "RMT RA tx fail: %s", esp_err_to_name(tx_err));
                 motors_rmt_abort_ra();
-                motors_motion_active = false;
+                s_motion.active = false;
                 motors_state.status = MOTORS_STATUS_READY;
                 motors_state.tracking = TRACKING_NONE;
                 motors_state.guiding = false;
@@ -775,13 +777,13 @@ static void tracking_loop_rmt(void) {
                 ESP_LOGW(TAG, "RMT RA wait %s",
                          (wait_err == ESP_ERR_TIMEOUT) ? "timeout" : "error");
                 motors_rmt_abort_ra();
-                motors_motion_active = false;
+                s_motion.active = false;
                 motors_state.status = MOTORS_STATUS_READY;
                 motors_state.tracking = TRACKING_NONE;
                 motors_state.guiding = false;
                 return;
             }
-            if (!motors_motion_active) { ra_phase = 0.0; return; }
+            if (!s_motion.active) { ra_phase = 0.0; return; }
 
             motors_state.ra_steps = next;
             ra_phase -= 1.0;
@@ -792,20 +794,20 @@ static void tracking_loop_rmt(void) {
             if (!motors_is_valid_ra_steps(next)) {
                 ESP_LOGW(TAG, "RA limit at %.3f deg",
                          (double)motors_steps_to_deg(motors_state.ra_steps));
-                motors_motion_active = false;
+                s_motion.active = false;
                 motors_state.status = MOTORS_STATUS_READY;
                 motors_state.tracking = TRACKING_NONE;
                 motors_state.guiding = false;
                 return;
             }
-            if (!motors_motion_active) { ra_phase = 0.0; return; }
+            if (!s_motion.active) { ra_phase = 0.0; return; }
 
             motors_rmt_encode_pulse(ra_sym);
             esp_err_t tx_err = motors_rmt_transmit_ra(ra_sym, 1);
             if (tx_err != ESP_OK) {
                 ESP_LOGE(TAG, "RMT RA tx fail: %s", esp_err_to_name(tx_err));
                 motors_rmt_abort_ra();
-                motors_motion_active = false;
+                s_motion.active = false;
                 motors_state.status = MOTORS_STATUS_READY;
                 motors_state.tracking = TRACKING_NONE;
                 motors_state.guiding = false;
@@ -816,13 +818,13 @@ static void tracking_loop_rmt(void) {
                 ESP_LOGW(TAG, "RMT RA wait %s",
                          (wait_err == ESP_ERR_TIMEOUT) ? "timeout" : "error");
                 motors_rmt_abort_ra();
-                motors_motion_active = false;
+                s_motion.active = false;
                 motors_state.status = MOTORS_STATUS_READY;
                 motors_state.tracking = TRACKING_NONE;
                 motors_state.guiding = false;
                 return;
             }
-            if (!motors_motion_active) { ra_phase = 0.0; return; }
+            if (!s_motion.active) { ra_phase = 0.0; return; }
 
             motors_state.ra_steps = next;
             ra_phase += 1.0;
@@ -844,7 +846,7 @@ static void tracking_loop_rmt(void) {
                 dec_phase = 0.0;
                 break;
             }
-            if (!motors_motion_active) { dec_phase = 0.0; return; }
+            if (!s_motion.active) { dec_phase = 0.0; return; }
 
             motors_rmt_encode_pulse(dec_sym);
             esp_err_t tx_err = motors_rmt_transmit_dec(dec_sym, 1);
@@ -868,7 +870,7 @@ static void tracking_loop_rmt(void) {
                 dec_phase = 0.0;
                 break;
             }
-            if (!motors_motion_active) { dec_phase = 0.0; return; }
+            if (!s_motion.active) { dec_phase = 0.0; return; }
 
             motors_state.dec_steps = next;
             dec_phase -= 1.0;
@@ -888,7 +890,7 @@ static void tracking_loop_rmt(void) {
                 dec_phase = 0.0;
                 break;
             }
-            if (!motors_motion_active) { dec_phase = 0.0; return; }
+            if (!s_motion.active) { dec_phase = 0.0; return; }
 
             motors_rmt_encode_pulse(dec_sym);
             esp_err_t tx_err = motors_rmt_transmit_dec(dec_sym, 1);
@@ -912,7 +914,7 @@ static void tracking_loop_rmt(void) {
                 dec_phase = 0.0;
                 break;
             }
-            if (!motors_motion_active) { dec_phase = 0.0; return; }
+            if (!s_motion.active) { dec_phase = 0.0; return; }
 
             motors_state.dec_steps = next;
             dec_phase += 1.0;
@@ -967,8 +969,8 @@ static void motion_loop(void) {
  * Blocks on the command queue when idle. When a motion-producing command
  * arrives (SLEW, TRACK, or MOVE_AXIS), enters motion_loop() which dispatches
  * to the appropriate RMT-driven execution path.
- * Stop / park / disable / enable are handled directly by their
- * callers via motors_motion_stop() + motors_state update.
+ * Stop / park / enable are handled directly by their callers via
+ * motors_motion_stop() + motors_state update.
  * -------------------------------------------------------------------------- */
 static void motors_motion_task_run(void *arg) {
     (void) arg;

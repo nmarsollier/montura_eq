@@ -153,6 +153,8 @@ static esp_err_t create_channel(gpio_num_t gpio, rmt_chan_ctx_t *ctx,
  * Public API — init / deinit
  * -------------------------------------------------------------------------- */
 
+static esp_err_t motors_rmt_deinit(void);
+
 esp_err_t motors_rmt_init(void)
 {
     if (s_rmt.initialized) {
@@ -179,7 +181,7 @@ esp_err_t motors_rmt_init(void)
     return ESP_OK;
 }
 
-esp_err_t motors_rmt_deinit(void)
+static esp_err_t motors_rmt_deinit(void)
 {
     if (s_rmt.ra.encoder != NULL) {
         rmt_del_encoder(s_rmt.ra.encoder);

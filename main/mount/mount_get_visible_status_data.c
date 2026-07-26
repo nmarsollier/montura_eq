@@ -1,4 +1,4 @@
-/* Mount - mount_visible_status.c
+/* Mount - mount_get_visible_status_data.c
  *
  * Purpose: build the visible status snapshot for UI and API consumers.
  */

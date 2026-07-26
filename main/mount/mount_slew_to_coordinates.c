@@ -22,8 +22,7 @@ MountResult mount_slew_to_coordinates(float ra, float dec, int speed_rate) {
         return mount_result_error("Target unreachable — no valid axis solution");
     }
 
-    MotorResultCode rc1 = motors_slew_to_angle(axis.ra_axis_deg, axis.dec_axis_deg, speed_rate,
-                                               mount_internal_state.lat);
+    MotorResultCode rc1 = motors_slew_to_angle(axis.ra_axis_deg, axis.dec_axis_deg, speed_rate);
 
     if (rc1 != MOTOR_OK) {
         return mount_result_error("Failed to start slew to coordinates");

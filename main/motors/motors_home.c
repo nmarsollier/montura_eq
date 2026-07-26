@@ -9,7 +9,7 @@
 #include "motors.h"
 #include "motors_internal.h"
 
-void motors_home(float lat) {
+void motors_home(void) {
     motors_stop();
-    motors_slew_to_angle(0.0f, 0.0f, 0, lat);
+    motors_slew_to_angle(0.0f, 0.0f, 0);
 }

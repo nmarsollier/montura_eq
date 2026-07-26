@@ -4,7 +4,8 @@
 #include "mount.h"
 
 /*
- * Identifier for physical axes managed by the motors module.
+ * Physical motor axis identifiers used by REST API endpoints that accept
+ * an axis parameter (e.g. MoveAxis).
  */
 typedef enum {
     MOTOR_AXIS_RA,
@@ -43,4 +44,6 @@ void rest_send_result(
     httpd_req_t *request,
     MountResult result);
 
-MotorAxis motors_axis_from_string(const char *value);
+/* Axis string helpers for REST API parameter parsing. */
+MotorAxis rest_axis_from_string(const char *value);
+const char *rest_axis_valid_values(void);

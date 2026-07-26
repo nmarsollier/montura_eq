@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include "motors/motors.h"
 
-/* Use `MotorAxis` from the motors package for mount axis operations. */
+/* MotorAxis is defined in rest/rest.h */
 
 typedef struct {
     float lat;
@@ -91,8 +91,8 @@ void mount_init(void);
  * mount_get_visible_status_data
  * -----------------------------
  * Return the current status view that the REST/API layer and UI consume.
- * The structure contains motors-derived status, current tracking mode, last
- * known RA/DEC (in axis-space), timestamp and persisted settings.
+ * The structure contains motors-derived status, current tracking mode,
+ * RA/DEC coordinates, LST, pier side, and persisted settings.
  */
 VisibleStatusData mount_get_visible_status(void);
 
@@ -199,23 +199,23 @@ float mount_get_dec_deg(void);
 /* Compute the current Local Sidereal Time for the configured site. */
 float mount_get_lst(void);
 
-TrackingMode motors_tracking_from_string(const char *value);
-
 /*
  * mount_pulse_guide
  * -----------------
  * Execute a guide pulse on the specified astronomical direction for the
- * given duration in milliseconds.  Rejected if the mount is slewing,
- * moving, parked, or disabled.  Coexists with tracking.
+ * given duration in milliseconds.  Rejected if the mount is not READY
+ * or TRACKING.  Coexists with tracking.
  *
- * Guide rate is taken from the stored alpaca_bridge guide rate (deg/s).
+ * Guide rate is read from the per-axis guide rate stored in this module.
  */
 MountResult mount_pulse_guide(GuideDirection direction, uint32_t duration_ms);
 
 /*
  * mount_set_guide_rate / mount_get_guide_rate
  * -------------------------------------------
- * Store or retrieve the guide rate for the given axis in degrees/second.
+ * Store or retrieve the guide rate per axis in degrees/second.
+ * Kept separate because Alpaca exposes GuideRateRA and GuideRateDEC
+ * as independent properties.
  */
 void mount_set_guide_rate_ra(float rate_dps);
 void mount_set_guide_rate_dec(float rate_dps);

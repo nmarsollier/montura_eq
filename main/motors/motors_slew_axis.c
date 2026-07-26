@@ -13,7 +13,7 @@
 
 static const char *TAG = "MOTORS_SLEW_AXIS";
 
-static MotorResultCode motors_slew_axis_impl(float ra_delta_deg, float dec_delta_deg, float lat) {
+static MotorResultCode motors_slew_axis_impl(float ra_delta_deg, float dec_delta_deg) {
     TrackingMode currTracking = TRACKING_NONE;
     if (motors_state.status == MOTORS_STATUS_TRACKING
         && motors_state.tracking != TRACKING_NONE) {
@@ -44,14 +44,14 @@ static MotorResultCode motors_slew_axis_impl(float ra_delta_deg, float dec_delta
  * Validates the future position against axis limits before enqueuing.
  * Pauses and resumes tracking automatically when active.
  */
-MotorResultCode motors_slew_axis_ra(float degrees, int speed_rate, float lat) {
+MotorResultCode motors_slew_axis_ra(float degrees, int speed_rate) {
     if (!motors_is_valid_ra(motors_get_ra_deg() + degrees)) {
         ESP_LOGW(TAG, "Rejected RA move: out of range (%.3f)",
                  motors_get_ra_deg() + degrees);
         return MOTOR_ERR_OUT_OF_RANGE;
     }
     motors_state.ra_speed = motors_get_slewing_speed(speed_rate);
-    return motors_slew_axis_impl(degrees, 0.0f, lat);
+    return motors_slew_axis_impl(degrees, 0.0f);
 }
 
 /*
@@ -61,12 +61,12 @@ MotorResultCode motors_slew_axis_ra(float degrees, int speed_rate, float lat) {
  * Validates the future position against axis limits before enqueuing.
  * Pauses and resumes tracking automatically when active.
  */
-MotorResultCode motors_slew_axis_dec(float degrees, int speed_rate, float lat) {
+MotorResultCode motors_slew_axis_dec(float degrees, int speed_rate) {
     if (!motors_is_valid_dec(motors_get_dec_deg() + degrees)) {
         ESP_LOGW(TAG, "Rejected DEC move: out of range (%.3f)",
                  motors_get_dec_deg() + degrees);
         return MOTOR_ERR_OUT_OF_RANGE;
     }
     motors_state.dec_speed = motors_get_slewing_speed(speed_rate);
-    return motors_slew_axis_impl(0.0f, degrees, lat);
+    return motors_slew_axis_impl(0.0f, degrees);
 }

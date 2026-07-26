@@ -35,6 +35,17 @@ typedef enum TrackingMode {
 } TrackingMode;
 
 /*
+ * Tracking angular speeds (deg/s) — apparent sky motion at the equator.
+ *
+ * SIDEREAL  = 360° / 86164.0905308 s  (sidereal day)
+ * SOLAR     = 360° / 86400 s          (mean solar day, annual mean)
+ * LUNAR     = SIDEREAL − 360° / (27.321661 × 86400)  (sidereal month)
+ */
+#define TRACKING_SPEED_SIDEREAL_DPS  0.004178074f
+#define TRACKING_SPEED_SOLAR_DPS     0.004166667f
+#define TRACKING_SPEED_LUNAR_DPS     0.004025576f
+
+/*
  * Authoritative snapshot of the motors module's view of the mount.
  *
  * Position fields are absolute microstep counters (int64_t) for zero
@@ -87,11 +98,6 @@ esp_err_t motors_init(void);
 void motors_enable(void);
 
 /*
- * Disable motor drivers.
- */
-void motors_disable(void);
-
-/*
  * Return a snapshot copy of the current `MotorsState`.
  */
 MotorsState motors_current_state(void);
@@ -117,7 +123,7 @@ void motors_park(void);
 /*
  * Move the mount to the home position (0, 0).
  */
-void motors_home(float lat);
+void motors_home(void);
 
 /*
  * Set the current physical position as the new zero reference.
@@ -144,11 +150,6 @@ void motors_set_move_axis_speed(float ra_speed, float dec_speed);
 float motors_get_slewing_speed(int speed_rate);
 
 /*
- * Return a comma-separated list of valid axis names ("RA, DEC").
- */
-const char *motors_axis_valid_values(void);
-
-/*
  * Canonical status and tracking name helpers.
  */
 const char *motors_status_to_string(MotorsStatus status);
@@ -160,11 +161,11 @@ TrackingMode motors_tracking_from_string(const char *value);
 const char *motors_tracking_valid_values(void);
 
 /* Move both axes to absolute angles in degrees. */
-MotorResultCode motors_slew_to_angle(float ra_deg, float dec_deg, int speed_rate, float lat);
+MotorResultCode motors_slew_to_angle(float ra_deg, float dec_deg, int speed_rate);
 
-MotorResultCode motors_slew_axis_ra(float degrees, int speed_rate, float lat);
+MotorResultCode motors_slew_axis_ra(float degrees, int speed_rate);
 
-MotorResultCode motors_slew_axis_dec(float degrees, int speed_rate, float lat);
+MotorResultCode motors_slew_axis_dec(float degrees, int speed_rate);
 
 /*
  * Enqueue a PulseGuide command.  The motion task dequeues and executes

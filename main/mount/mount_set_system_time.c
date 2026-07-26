@@ -1,4 +1,4 @@
-/* Mount - mount_time.c
+/* Mount - mount_set_system_time.c
  *
  * Purpose: parse time values and update the system clock.
  */

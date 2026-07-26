@@ -1,11 +1,9 @@
-/* Mount - mount_settings.c
+/* Mount - mount_settings_update.c
  *
  * Purpose: validate and apply mount settings.
  */
 #include "mount.h"
 #include "mount_internal.h"
-
-/* mount_set_system_time is implemented in mount_time.c. */
 
 MountResult mount_settings_update(MountSettings settings) {
     if (settings.lat < -90.0f || settings.lat > 90.0f) {

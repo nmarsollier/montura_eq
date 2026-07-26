@@ -1,6 +1,7 @@
 #pragma once
 
 #include "motors.h"
+#include "tmc/tmc.h"
 
 #include "driver/rmt_tx.h"
 #include "freertos/FreeRTOS.h"
@@ -14,7 +15,7 @@
  * sole writer of motors_state position fields.
  *
  * Only motion-producing commands go through the queue.  Stop / park /
- * disable / enable are handled directly by their callers via
+ * enable are handled directly by their callers via
  * motors_motion_stop() + motors_state update — no queue round-trip.
  * ========================================================================= */
 
@@ -62,8 +63,6 @@ bool motors_is_valid_dec_steps(int64_t steps);
 /* =========================================================================
  * Mechanical constants — hardware configuration.
  * ========================================================================= */
-#define MOTOR_STEP_ANGLE_DEG     (1.8f)
-#define MOTOR_FULL_STEPS_PER_REV ((int)(360.0f / MOTOR_STEP_ANGLE_DEG))
 #define TOTAL_GEAR_REDUCTION     (200.0f)  /* motor shaft turns : axis turns */
 
 /* Maximum safe slew speed in deg/s — hardware ceiling for this reduction. */
@@ -97,40 +96,17 @@ bool motors_is_valid_dec_steps(int64_t steps);
 #define MOTORS_ENABLE_ACTIVE_LEVEL   0
 #define MOTORS_ENABLE_INACTIVE_LEVEL 1
 
-/* =========================================================================
- * Microstep and step resolution — sourced from TMC hardware.
- *
- * The TMC2209 driver is the SINGLE source of truth for microstep count.
- * Use the inline helper below to always read the active value from the
- * TMC module's verified cache (no UART transaction needed on read).
- *
- * Fallback: if TMC not yet initialized, returns TMC_TARGET_MICROSTEPS (128).
- * ========================================================================= */
-
-/*
- * Get the active microstep count from the TMC2209 driver.
- * Reads the cached value verified against hardware registers during init.
- * Falls back to TMC_TARGET_MICROSTEPS if the TMC is not yet initialised.
- * This value MUST match the TMC_TARGET_MICROSTEPS define in tmc_init.c.
- */
-#define MOTORS_FALLBACK_MICROSTEPS 32
-
-static inline uint16_t motors_get_microsteps(void) {
-    extern uint16_t tmc2209_get_active_microsteps(void);
-    uint16_t ms = tmc2209_get_active_microsteps();
-    return (ms > 0) ? ms : MOTORS_FALLBACK_MICROSTEPS;
-}
-
 /*
  * Angular displacement per microstep at the mount axis.
- * Computed at runtime from the TMC-verified microstep count,
- * gear ratio, and calibration factor — no hardcoded step size.
+ *
+ *   1.8° = NEMA 17 full-step angle
+ *   TMC_TARGET_MICROSTEPS = 32 (verified by TMC init; any other value is an error)
+ *   TOTAL_GEAR_REDUCTION  = 200:1 (20:80 pulleys)
  */
 static inline float motors_get_deg_per_microstep(void) {
-    return 360.0f / ((float) MOTOR_FULL_STEPS_PER_REV *
-                     (float) motors_get_microsteps() *
-                     TOTAL_GEAR_REDUCTION *
-                     MOTION_CALIBRATION_FACTOR);
+    return 1.8f / ((float) TMC_TARGET_MICROSTEPS *
+                    TOTAL_GEAR_REDUCTION *
+                    MOTION_CALIBRATION_FACTOR);
 }
 
 /* =========================================================================
@@ -195,8 +171,6 @@ static inline int64_t motors_deg_to_steps(float degrees) {
 
 esp_err_t motors_rmt_init(void);
 
-esp_err_t motors_rmt_deinit(void);
-
 uint32_t motors_rmt_encode_steps(rmt_symbol_word_t *symbols,
                                   uint32_t max_symbols,
                                   uint32_t step_period_ticks,
@@ -237,24 +211,15 @@ float motors_get_tracking_speed(TrackingMode mode);
 /* Motion task handle — exposed so external code can send notifications. */
 extern TaskHandle_t motors_motion_task_handle;
 
-/*
- * Motion-active flag — set false by external code (stop, park) to
- * signal the motion task to abort.  The motion task reads and clears
- * this, and handles RMT abort internally.
- */
-extern bool motors_motion_active;
-
 /* RMT abort — called ONLY by the motion task. */
-void motors_rmt_abort_ra(void);
-void motors_rmt_abort_dec(void);
-void motors_rmt_abort_both(void);
 
 /* =========================================================================
  * Task & queue lifecycle (motors_task.c, motors_queue.c).
  * ========================================================================= */
 
 /* Stop the active motion loop from outside the motion task.
- * Safe to call from any task — the loop exits at its next iteration. */
+ * Owns s_motion.active, RMT abort, and task notification.
+ * Safe to call from any task. */
 void motors_motion_stop(void);
 
 void motors_motion_task_init(void);

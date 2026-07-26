@@ -22,7 +22,7 @@ esp_err_t rest_move_axis_handler(httpd_req_t *request) {
 
     if (!axis_str.ok) {
         static const char format[] = "Missing or invalid 'axis'. Valid values: %s";
-        const char *valid = motors_axis_valid_values();
+        const char *valid = rest_axis_valid_values();
         char message[strlen(valid) + sizeof(format)];
 
         snprintf(message, sizeof(message), format, valid);
@@ -31,11 +31,11 @@ esp_err_t rest_move_axis_handler(httpd_req_t *request) {
         return ESP_OK;
     }
 
-    MotorAxis axis = motors_axis_from_string(axis_str.value);
+    MotorAxis axis = rest_axis_from_string(axis_str.value);
 
     if (axis == MOTOR_AXIS_UNKNOWN) {
         static const char format[] = "Invalid 'axis'. Valid values: %s";
-        const char *valid = motors_axis_valid_values();
+        const char *valid = rest_axis_valid_values();
         char message[strlen(valid) + sizeof(format)];
 
         snprintf(message, sizeof(message), format, valid);

@@ -2,13 +2,12 @@
 
 #include <string.h>
 
-#include "utils.h"
+#include "utils/utils.h"
 
-
-/* Axis string helpers live here so REST and UI layers use the same
- * canonical values as the motors module.
+/*
+ * Axis string helpers — canonical conversion between MotorAxis and "ra"/"dec".
  */
-const char *motors_axis_to_string(MotorAxis axis) {
+static const char *rest_axis_to_string(MotorAxis axis) {
     switch (axis) {
         case MOTOR_AXIS_RA:
             return "ra";
@@ -19,8 +18,7 @@ const char *motors_axis_to_string(MotorAxis axis) {
     }
 }
 
-/* Canonical string-to-axis mapping shared by the rest of the codebase. */
-MotorAxis motors_axis_from_string(const char *value) {
+MotorAxis rest_axis_from_string(const char *value) {
     if (value == NULL)
         return MOTOR_AXIS_UNKNOWN;
     if (strcmp(value, "ra") == 0)
@@ -30,7 +28,7 @@ MotorAxis motors_axis_from_string(const char *value) {
     return MOTOR_AXIS_UNKNOWN;
 }
 
-const char *motors_axis_valid_values(void) {
+const char *rest_axis_valid_values(void) {
     static char buffer[15];
     static bool initialized = false;
 
@@ -41,7 +39,7 @@ const char *motors_axis_valid_values(void) {
     const char *values[MOTOR_AXIS_UNKNOWN];
 
     for (int i = 0; i < MOTOR_AXIS_UNKNOWN; i++) {
-        values[i] = motors_axis_to_string((MotorAxis) i);
+        values[i] = rest_axis_to_string((MotorAxis) i);
     }
 
     string_join(buffer, sizeof(buffer), values, MOTOR_AXIS_UNKNOWN, "|", "[", "]");

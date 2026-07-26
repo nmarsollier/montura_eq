@@ -11,7 +11,6 @@ idf_component_register(
         "usb_net/usb_net_data.c"
 
         "motors/motors_current_state.c"
-        "motors/motors_disable.c"
         "motors/motors_enable.c"
         "motors/motors_get_slewing_speed.c"
         "motors/motors_get_tracking_speed.c"

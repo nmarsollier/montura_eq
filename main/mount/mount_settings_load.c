@@ -1,4 +1,4 @@
-/* Mount - mount_settings_storage.c
+/* Mount - mount_settings_load.c
  *
  * Purpose: persist mount settings in NVS.
  */
