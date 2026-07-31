@@ -33,14 +33,14 @@ esp_err_t motors_init(void) {
     err = motors_hw_init();
     if (err != ESP_OK) {
         ESP_LOGE("MOTORS_INIT", "motors_hw_init: %s", esp_err_to_name(err));
-        motors_state.status = MOTORS_STATUS_DISABLED;
+        motors_enter_error_state();
         return err;
     }
 
     err = motors_rmt_init();
     if (err != ESP_OK) {
         ESP_LOGE("MOTORS_INIT", "motors_rmt_init: %s", esp_err_to_name(err));
-        motors_state.status = MOTORS_STATUS_DISABLED;
+        motors_enter_error_state();
         return err;
     }
 

@@ -5,6 +5,10 @@
 static TrackingMode s_saved_tracking = TRACKING_NONE;
 
 MountResult mount_set_move_axis_speed(float ra_speed, float dec_speed) {
+    if (mount_is_motors_error()) {
+        return mount_result_motors_error();
+    }
+
     if ((int) ra_speed == 0 && (int) dec_speed == 0) {
         /* Read before mount_stop() — mount_move_axis_reset() clears it. */
         TrackingMode to_restore = s_saved_tracking;
@@ -24,9 +28,8 @@ MountResult mount_set_move_axis_speed(float ra_speed, float dec_speed) {
         s_saved_tracking = saved;
     }
 
-    motors_set_move_axis_speed(ra_speed, dec_speed);
-
-    return mount_result_ok();
+    MotorResultCode rc = motors_set_move_axis_speed(ra_speed, dec_speed);
+    return motors_result_code_error_result(rc);
 }
 
 void mount_move_axis_reset(void) {

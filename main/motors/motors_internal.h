@@ -225,3 +225,10 @@ void motors_motion_stop(void);
 void motors_motion_task_init(void);
 
 void motors_queue_init(void);
+
+/*
+ * Put the motors subsystem into the unrecoverable ERROR state.
+ * Aborts RMT, sets MOTORS_STATUS_ERROR, clears guiding, disables HW.
+ * Only a reboot can clear this state.
+ */
+void motors_enter_error_state(void);

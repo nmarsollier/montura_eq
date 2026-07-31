@@ -20,8 +20,16 @@
 
 /* ── Timing ───────────────────────────────────────────────── */
 
-#define LED_FADE_MS      1000  /* normal <-> slewing transition */
-#define LED_BREATHE_MS   1500  /* half-period of error breathing */
+#define LED_FADE_MS           1000  /* normal <-> slewing transition */
+#define LED_BREATHE_SLOW_MS   1500  /* half-period of error breathing */
+#define LED_HEARTBEAT_TICK_MS  300  /* heartbeat state-machine tick */
+
+/* ── Breathing patterns ───────────────────────────────────── */
+
+typedef enum {
+    BREATHE_PATTERN_SMOOTH,    /* slow fade up/down — motor ERROR */
+    BREATHE_PATTERN_HEARTBEAT  /* double-pulse, long pause — WiFi waiting */
+} BreathePattern;
 
 /* ── Shared state (defined in led_set_state.c) ────────────── */
 
@@ -32,6 +40,12 @@ extern LedState led_current_state;
 /* Start a hardware fade to target_duty over time_ms. */
 void led_start_fade(uint32_t target_duty, uint32_t time_ms);
 
-/* Start / stop the breathing timer (only for ERROR state). */
-void led_breathe_start(void);
+/* Start / stop the breathing animation with the given pattern. */
+void led_breathe_start(BreathePattern pattern);
 void led_breathe_stop(void);
+
+/*
+ * Internal: apply a state transition (dim / bright / breathing).
+ * Only called from led_update() — not part of the public API.
+ */
+void led_set_state(LedState state);

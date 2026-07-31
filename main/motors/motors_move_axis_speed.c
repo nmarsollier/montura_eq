@@ -9,10 +9,13 @@
 #include "motors.h"
 #include "motors_internal.h"
 
-void motors_set_move_axis_speed(float ra_speed, float dec_speed) {
+MotorResultCode motors_set_move_axis_speed(float ra_speed, float dec_speed) {
+    if (motors_state.status == MOTORS_STATUS_ERROR) {
+        return MOTOR_ERR_HARDWARE_ERROR;
+    }
+
     if ((int) ra_speed == 0 && (int) dec_speed == 0) {
-        motors_stop();
-        return;
+        return motors_stop();
     }
 
     /* Clamp to hardware-safe maximum. */
@@ -31,4 +34,5 @@ void motors_set_move_axis_speed(float ra_speed, float dec_speed) {
         .tracking_mode = TRACKING_NONE,
     };
     motors_queue_put(&cmd);
+    return MOTOR_OK;
 }

@@ -15,16 +15,18 @@ const char *motors_status_to_string(MotorsStatus status) {
     switch (status) {
         case MOTORS_STATUS_READY:
             return "ready";
-        case MOTORS_STATUS_TRACKING:
-            return "tracking";
-        case MOTORS_STATUS_DISABLED:
-            return "disabled";
         case MOTORS_STATUS_SLEWING:
             return "slewing";
+        case MOTORS_STATUS_TRACKING:
+            return "tracking";
         case MOTORS_STATUS_PARKED:
             return "parked";
-        default:
+        case MOTORS_STATUS_ERROR:
+            return "error";
+        case MOTORS_STATUS_DISABLED:
             return "disabled";
+        default:
+            return "error";
     }
 }
 

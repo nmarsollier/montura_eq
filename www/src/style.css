@@ -1,25 +1,25 @@
 /* ═══════════════════════════════════════════════════
-   NRM-WO — Velvet Dark Theme
-   Paleta: negro, gris oscuro, rojo velvet
+   NRM-WO — Monochrome Theme
+   Palette: black → white grayscale. Red reserved for errors.
    ═══════════════════════════════════════════════════ */
 
 :root {
-    --bg: #080808;
-    --panel: #111111;
-    --panel-raised: #181818;
-    --border: #251010;
-    --accent: #8b1a1a;
-    --accent-bright: #b52222;
-    --accent-glow: #3d0808;
-    --text: #ebebeb;
-    --text-dim: #8a7a7a;
-    --text-title: #e8c0c0;
-    --text-accent: #d48080;
-    --btn-bg: #1c0d0d;
-    --btn-hover: #3d1515;
-    --btn-active: #5a1a1a;
-    --input-bg: #0d0d0d;
-    --input-border: #2a1515;
+    --bg: #0a0a0a;
+    --panel: #141414;
+    --panel-raised: #1c1c1c;
+    --border: #2a2a2a;
+    --accent: #555;
+    --accent-bright: #777;
+    --accent-glow: rgba(255, 255, 255, 0.05);
+    --text: #e8e8e8;
+    --text-dim: #777;
+    --text-title: #ddd;
+    --text-accent: #aaa;
+    --btn-bg: #1c1c1c;
+    --btn-hover: #2a2a2a;
+    --btn-active: #3a3a3a;
+    --input-bg: #0f0f0f;
+    --input-border: #2a2a2a;
     --shadow: 0 4px 24px rgba(0, 0, 0, .7);
 }
 
@@ -66,7 +66,7 @@ body {
 }
 
 .header-brand span {
-    color: var(--accent-bright);
+    color: #fff;
 }
 
 .header-sub {
@@ -100,7 +100,7 @@ body {
 }
 
 .panel:hover {
-    border-color: #351515;
+    border-color: #3a3a3a;
 }
 
 .panel-header {
@@ -494,7 +494,7 @@ select {
 }
 
 input::placeholder {
-    color: #4a3a3a;
+    color: #555;
 }
 
 /* ═══════════════════════════════════════════════════
@@ -505,9 +505,9 @@ input::placeholder {
     margin-top: 10px;
     padding: 10px 14px;
     border-radius: 8px;
-    background: #1a0a0a;
-    border: 1px solid #4a2020;
-    color: var(--text-accent);
+    background: #1a1a1a;
+    border: 1px solid #3a3a3a;
+    color: #aaa;
     font-size: 13px;
 }
 
@@ -533,6 +533,85 @@ input::placeholder {
     box-shadow: 0 0 20px var(--accent-glow);
 }
 
+/* Fatal / unrecoverable error banner — motors in ERROR state */
+.fatal-banner {
+    margin: 0 auto 12px;
+    max-width: 880px;
+    padding: 14px 20px;
+    border-radius: 10px;
+    background: #1a0000;
+    border: 1px solid #d32f2f;
+    color: #ff6b6b;
+    font-size: 13px;
+    font-weight: 600;
+    text-align: center;
+    box-shadow: 0 0 24px rgba(211, 47, 47, 0.3);
+}
+
+.status-error {
+    background: #d32f2f !important;
+    color: #fff !important;
+}
+
+/* Disabled state for buttons in ERROR */
+button:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+/* ═══════════════════════════════════════════════════
+   Footer
+   ═══════════════════════════════════════════════════ */
+
+/* ═══════════════════════════════════════════════════
+   Debug panel
+   ═══════════════════════════════════════════════════ */
+
+.debug-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 14px;
+    margin-top: 6px;
+}
+
+.debug-group {
+    background: #0D0D0D;
+    border: 1px solid #1a1a1a;
+    border-radius: 8px;
+    padding: 10px 12px;
+}
+
+.debug-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1.4px;
+    color: var(--text-accent);
+    margin-bottom: 8px;
+    font-weight: 600;
+}
+
+.debug-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    padding: 2px 0;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+}
+
+.debug-row span:first-child {
+    color: #555;
+}
+
+.debug-row span:last-child {
+    color: var(--text);
+    text-align: right;
+    word-break: break-all;
+}
+
+.debug-ok { color: #4caf50 !important; }
+.debug-fail { color: #d32f2f !important; }
+
 /* ═══════════════════════════════════════════════════
    Footer
    ═══════════════════════════════════════════════════ */
@@ -540,13 +619,13 @@ input::placeholder {
 footer {
     text-align: center;
     font-size: 11px;
-    color: #332525;
+    color: #444;
     margin-top: 20px;
     letter-spacing: .5px;
 }
 
 footer code {
-    color: #4a3535;
+    color: #555;
     background: #0d0d0d;
     padding: 1px 6px;
     border-radius: 4px;

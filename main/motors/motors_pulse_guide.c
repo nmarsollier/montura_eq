@@ -10,7 +10,11 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
-void motors_pulse_guide_start(int axis, float offset_dps, uint32_t duration_ms) {
+MotorResultCode motors_pulse_guide_start(int axis, float offset_dps, uint32_t duration_ms) {
+    if (motors_state.status == MOTORS_STATUS_ERROR) {
+        return MOTOR_ERR_HARDWARE_ERROR;
+    }
+
     MotionCommand cmd = {
         .type = MOTION_CMD_PULSE_GUIDE,
         .guide_axis = axis,
@@ -23,4 +27,5 @@ void motors_pulse_guide_start(int axis, float offset_dps, uint32_t duration_ms) 
     if (motors_motion_task_handle) {
         xTaskNotify(motors_motion_task_handle, 0, eNoAction);
     }
+    return MOTOR_OK;
 }

@@ -1,5 +1,6 @@
 #include "rest_alpaca.h"
 #include "rest_alpaca_internal.h"
+#include "motors/motors.h"
 
 /* Alpaca — Capability — CanSlewAltAzAsync
  *

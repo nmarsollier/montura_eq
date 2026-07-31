@@ -4,6 +4,8 @@ function mountApp() {
         lst: '--:--:--',
         pierSide: '--',
         statusText: 'UNKNOWN',
+        isError: false,
+        debug: {},
         settings: {lat: 0, lon: 0, elevation: 0},
         mountTime: '--',
         timeAutoSet: false,
@@ -35,10 +37,10 @@ function mountApp() {
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify(body)
             }).then(r => r.json()).then(j => {
-                if (!j.ok) this.showError(j.message || 'Error desconocido');
+                if (!j.ok) this.showError(j.message || 'Unknown error');
                 return j;
             }).catch(e => {
-                this.showError('Red o servidor no disponible');
+                this.showError('Network or server unavailable');
                 throw e;
             });
         },
@@ -53,7 +55,9 @@ function mountApp() {
                 this.serverTracking = j.tracking || 'none';
                 this.wifiAp = j.wifi_ap || false;
                 this.isHome = j.is_home || false;
-                this.isParked = (j.status === 'PARKED');
+                this.isParked = (j.status === 'parked');
+                this.isError = (j.status === 'error');
+                this.debug = j.debug || {};
 
                 const s = j.settings;
                 if (s) {
@@ -129,11 +133,11 @@ function mountApp() {
             const ds = this.slewTarget.dec.s;
 
             if (isNaN(rh) || rh < 0 || rh > 23 || isNaN(rm) || rm < 0 || rm > 59 || isNaN(rs) || rs < 0 || rs >= 60) {
-                this.showError('RA inválida — H: 0–23, M: 0–59, S: 0–59.999');
+                this.showError('Invalid RA — H: 0–23, M: 0–59, S: 0–59.999');
                 return;
             }
             if (isNaN(dd) || dd < -180 || dd > 180 || isNaN(dm) || dm < 0 || dm > 59 || isNaN(ds) || ds < 0 || ds >= 60) {
-                this.showError('DEC inválida — D: −180…+180, M: 0–59, S: 0–59.999');
+                this.showError('Invalid DEC — D: −180…+180, M: 0–59, S: 0–59.999');
                 return;
             }
 
@@ -161,6 +165,16 @@ function mountApp() {
                 lon: this.settings.lon || 0,
                 elevation: this.settings.elevation || 0
             }).then(() => this.fetchStatus());
+        },
+
+        fmtUptime(s) {
+            if (s == null) return '—';
+            const h = Math.floor(s / 3600);
+            const m = Math.floor((s % 3600) / 60);
+            const sec = s % 60;
+            if (h > 0) return h + 'h ' + m + 'm ' + sec + 's';
+            if (m > 0) return m + 'm ' + sec + 's';
+            return sec + 's';
         },
 
         init() {

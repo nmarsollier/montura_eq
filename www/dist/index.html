@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="es">
+<html lang="en">
 
 <head>
     <meta charset="utf-8"/>
@@ -7,27 +7,27 @@
     <title>NRM-WO</title>
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='14' fill='%231a1a2e' stroke='%234fc3f7' stroke-width='2'/%3E%3Ccircle cx='16' cy='16' r='2' fill='%234fc3f7'/%3E%3Cline x1='16' y1='6' x2='16' y2='2' stroke='%234fc3f7' stroke-width='2'/%3E%3C/svg%3E">
     <style>/* ═══════════════════════════════════════════════════
-   NRM-WO — Velvet Dark Theme
-   Paleta: negro, gris oscuro, rojo velvet
+   NRM-WO — Monochrome Theme
+   Palette: black → white grayscale. Red reserved for errors.
    ═══════════════════════════════════════════════════ */
 
 :root {
-    --bg: #080808;
-    --panel: #111111;
-    --panel-raised: #181818;
-    --border: #251010;
-    --accent: #8b1a1a;
-    --accent-bright: #b52222;
-    --accent-glow: #3d0808;
-    --text: #ebebeb;
-    --text-dim: #8a7a7a;
-    --text-title: #e8c0c0;
-    --text-accent: #d48080;
-    --btn-bg: #1c0d0d;
-    --btn-hover: #3d1515;
-    --btn-active: #5a1a1a;
-    --input-bg: #0d0d0d;
-    --input-border: #2a1515;
+    --bg: #0a0a0a;
+    --panel: #141414;
+    --panel-raised: #1c1c1c;
+    --border: #2a2a2a;
+    --accent: #555;
+    --accent-bright: #777;
+    --accent-glow: rgba(255, 255, 255, 0.05);
+    --text: #e8e8e8;
+    --text-dim: #777;
+    --text-title: #ddd;
+    --text-accent: #aaa;
+    --btn-bg: #1c1c1c;
+    --btn-hover: #2a2a2a;
+    --btn-active: #3a3a3a;
+    --input-bg: #0f0f0f;
+    --input-border: #2a2a2a;
     --shadow: 0 4px 24px rgba(0, 0, 0, .7);
 }
 
@@ -74,7 +74,7 @@ body {
 }
 
 .header-brand span {
-    color: var(--accent-bright);
+    color: #fff;
 }
 
 .header-sub {
@@ -108,7 +108,7 @@ body {
 }
 
 .panel:hover {
-    border-color: #351515;
+    border-color: #3a3a3a;
 }
 
 .panel-header {
@@ -502,7 +502,7 @@ select {
 }
 
 input::placeholder {
-    color: #4a3a3a;
+    color: #555;
 }
 
 /* ═══════════════════════════════════════════════════
@@ -513,9 +513,9 @@ input::placeholder {
     margin-top: 10px;
     padding: 10px 14px;
     border-radius: 8px;
-    background: #1a0a0a;
-    border: 1px solid #4a2020;
-    color: var(--text-accent);
+    background: #1a1a1a;
+    border: 1px solid #3a3a3a;
+    color: #aaa;
     font-size: 13px;
 }
 
@@ -541,6 +541,85 @@ input::placeholder {
     box-shadow: 0 0 20px var(--accent-glow);
 }
 
+/* Fatal / unrecoverable error banner — motors in ERROR state */
+.fatal-banner {
+    margin: 0 auto 12px;
+    max-width: 880px;
+    padding: 14px 20px;
+    border-radius: 10px;
+    background: #1a0000;
+    border: 1px solid #d32f2f;
+    color: #ff6b6b;
+    font-size: 13px;
+    font-weight: 600;
+    text-align: center;
+    box-shadow: 0 0 24px rgba(211, 47, 47, 0.3);
+}
+
+.status-error {
+    background: #d32f2f !important;
+    color: #fff !important;
+}
+
+/* Disabled state for buttons in ERROR */
+button:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+/* ═══════════════════════════════════════════════════
+   Footer
+   ═══════════════════════════════════════════════════ */
+
+/* ═══════════════════════════════════════════════════
+   Debug panel
+   ═══════════════════════════════════════════════════ */
+
+.debug-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 14px;
+    margin-top: 6px;
+}
+
+.debug-group {
+    background: #0D0D0D;
+    border: 1px solid #1a1a1a;
+    border-radius: 8px;
+    padding: 10px 12px;
+}
+
+.debug-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1.4px;
+    color: var(--text-accent);
+    margin-bottom: 8px;
+    font-weight: 600;
+}
+
+.debug-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    padding: 2px 0;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+}
+
+.debug-row span:first-child {
+    color: #555;
+}
+
+.debug-row span:last-child {
+    color: var(--text);
+    text-align: right;
+    word-break: break-all;
+}
+
+.debug-ok { color: #4caf50 !important; }
+.debug-fail { color: #d32f2f !important; }
+
 /* ═══════════════════════════════════════════════════
    Footer
    ═══════════════════════════════════════════════════ */
@@ -548,13 +627,13 @@ input::placeholder {
 footer {
     text-align: center;
     font-size: 11px;
-    color: #332525;
+    color: #444;
     margin-top: 20px;
     letter-spacing: .5px;
 }
 
 footer code {
-    color: #4a3535;
+    color: #555;
     background: #0d0d0d;
     padding: 1px 6px;
     border-radius: 4px;
@@ -597,14 +676,13 @@ footer code {
     <!-- ═══ Status ═══ -->
     <div class="panel">
         <div class="status-row">
-            <span class="status-badge" x-text="statusText"></span>
-            <span class="status-badge" x-show="isHome" style="background:#4caf50;color:#fff">HOME</span>
-            <span class="status-badge" x-show="isParked" style="background:#ff9800;color:#fff">PARKED</span>
-            <div style="flex:1"></div>
             <span class="coords"><span class="coords-label">RA</span> <span x-text="status.ra"></span></span>
             <span class="coords"><span class="coords-label">DEC</span> <span x-text="status.dec"></span></span>
             <span class="coords" style="opacity:0.7"><span class="coords-label">LST</span> <span x-text="lst"></span></span>
-            <span class="coords" style="opacity:0.7"><span class="coords-label">Pier</span> <span x-text="pierSide"></span></span>
+            <div style="flex:1"></div>
+            <span class="status-badge" x-text="statusText" :class="{ 'status-error': isError }"></span>
+            <span class="status-badge" x-show="isHome" style="background:#4caf50;color:#fff">HOME</span>
+            <span class="status-badge" x-show="isParked" style="background:#ff9800;color:#fff">PARKED</span>
         </div>
         <div class="info-row">
             <div>Tracking <span x-text="serverTracking"></span></div>
@@ -615,35 +693,74 @@ footer code {
         </div>
     </div>
 
-    <!-- ═══ Site & Time ═══ -->
+    <!-- ═══ Debug ═══ -->
     <div class="panel">
         <div class="panel-header">
             <div class="panel-dot"></div>
-            <strong>Configuración</strong>
+            <strong>Debug</strong>
+            <span class="hint">— internal diagnostics</span>
+        </div>
+        <div class="debug-grid">
+            <div class="debug-group">
+                <div class="debug-label">RA Axis</div>
+                <div class="debug-row"><span>Angle</span> <span x-text="debug.ra_axis_deg?.toFixed(4) + '°'"></span></div>
+                <div class="debug-row"><span>Steps</span> <span x-text="debug.ra_steps"></span></div>
+                <div class="debug-row"><span>Speed</span> <span x-text="debug.ra_speed?.toFixed(6) + ' °/s'"></span></div>
+            </div>
+            <div class="debug-group">
+                <div class="debug-label">DEC Axis</div>
+                <div class="debug-row"><span>Angle</span> <span x-text="debug.dec_axis_deg?.toFixed(4) + '°'"></span></div>
+                <div class="debug-row"><span>Steps</span> <span x-text="debug.dec_steps"></span></div>
+                <div class="debug-row"><span>Speed</span> <span x-text="debug.dec_speed?.toFixed(6) + ' °/s'"></span></div>
+            </div>
+            <div class="debug-group">
+                <div class="debug-label">Hardware</div>
+                <div class="debug-row"><span>TMC init</span> <span x-text="debug.tmc_ok ? 'OK' : 'FAIL'" :class="debug.tmc_ok ? 'debug-ok' : 'debug-fail'"></span></div>
+                <div class="debug-row"><span>Microsteps</span> <span x-text="debug.microsteps"></span></div>
+                <div class="debug-row"><span>Guiding</span> <span x-text="debug.guiding ? '✓' : '—'"></span></div>
+            </div>
+            <div class="debug-group">
+                <div class="debug-label">Limits (°)</div>
+                <div class="debug-row"><span>RA</span> <span x-text="'[' + debug.limits?.ra_min + ', ' + debug.limits?.ra_max + ']'"></span></div>
+                <div class="debug-row"><span>DEC</span> <span x-text="'[' + debug.limits?.dec_min + ', ' + debug.limits?.dec_max + ']'"></span></div>
+            </div>
+            <div class="debug-group">
+                <div class="debug-label">Network</div>
+                <div class="debug-row"><span>WiFi IP</span> <span x-text="debug.wifi_ip || '—'"></span></div>
+                <div class="debug-row"><span>Uptime</span> <span x-text="fmtUptime(debug.uptime_s)"></span></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══ Settings ═══ -->
+    <div class="panel">
+        <div class="panel-header">
+            <div class="panel-dot"></div>
+            <strong>Settings</strong>
         </div>
 
         <!-- Time row -->
         <div class="settings-row">
             <span class="settings-fields">
-                <span class="settings-label">Fecha y hora</span>
+                <span class="settings-label">Date &amp; time</span>
                 <span class="settings-value" x-text="mountTime">--</span>
             </span>
-            <button @click="updateTime()">Actualizar</button>
+            <button @click="updateTime()">Update</button>
         </div>
 
         <!-- Location row -->
         <div class="settings-row">
-            <span class="settings-label">Ubicación</span>
+            <span class="settings-label">Location</span>
             <span class="settings-fields">
                 <input type="text" inputmode="decimal" placeholder="Lat"
-                       x-model.number="settings.lat" class="settings-input" title="Latitud">
+                       x-model.number="settings.lat" class="settings-input" title="Latitude">
                 <input type="text" inputmode="decimal" placeholder="Lon"
-                       x-model.number="settings.lon" class="settings-input" title="Longitud">
+                       x-model.number="settings.lon" class="settings-input" title="Longitude">
                 <input type="text" inputmode="numeric" placeholder="Elev"
                        x-model.number="settings.elevation" class="settings-input settings-input-short"
-                       title="Elevación (m)">
+                       title="Elevation (m)">
             </span>
-            <button @click="updateSettings()">Actualizar</button>
+            <button @click="updateSettings()">Update</button>
         </div>
     </div>
 
@@ -652,14 +769,14 @@ footer code {
         <div class="panel">
             <div class="panel-header">
                 <div class="panel-dot"></div>
-                <strong>Acciones</strong>
+                <strong>Actions</strong>
             </div>
             <div class="row">
-                <button class="danger" @click="stop()">STOP</button>
-                <button @click="home()">HOME</button>
-                <button @click="zeroPosition()">ZERO</button>
-                <button @click="park()" x-show="!isParked">PARK</button>
-                <button @click="unpark()" x-show="isParked">UNPARK</button>
+                <button class="danger" @click="stop()" :disabled="isError">STOP</button>
+                <button @click="home()" :disabled="isError">HOME</button>
+                <button @click="zeroPosition()" :disabled="isError">ZERO</button>
+                <button @click="park()" x-show="!isParked" :disabled="isError">PARK</button>
+                <button @click="unpark()" x-show="isParked" :disabled="isError">UNPARK</button>
             </div>
         </div>
 
@@ -674,7 +791,7 @@ footer code {
                         <option :value="i" x-text="m"></option>
                     </template>
                 </select>
-                <button class="primary" @click="setTracking()">Set</button>
+                <button class="primary" @click="setTracking()" :disabled="isError">Set</button>
             </div>
         </div>
     </div>
@@ -687,17 +804,17 @@ footer code {
         </div>
 
         <div class="slew-layout">
-            <!-- Left: Grados + Velocidad -->
+            <!-- Left: Degrees + Speed -->
             <div class="slew-controls">
                 <div class="slew-field">
-                    <label>Grados (1–90°)</label>
+                    <label>Degrees (1–90°)</label>
                     <div class="slew-field-row">
                         <input type="text" inputmode="decimal" x-model.number="slew.degrees">
                     </div>
                 </div>
 
                 <div class="slew-field">
-                    <label>Velocidad</label>
+                    <label>Speed</label>
                     <select x-model.number="slew.speed">
                         <option value="1">1×</option>
                         <option value="2">2×</option>
@@ -711,14 +828,14 @@ footer code {
             <div class="slew-pad">
                 <div class="axis-grid">
                     <div class="axis-row">
-                        <button @click="doSlew('ra', -1)" title="RA −">◀</button>
+                        <button @click="doSlew('ra', -1)" :disabled="isError" title="RA −">◀</button>
                         <span class="axis-label">RA</span>
-                        <button @click="doSlew('ra', 1)" title="RA +">▶</button>
+                        <button @click="doSlew('ra', 1)" :disabled="isError" title="RA +">▶</button>
                     </div>
                     <div class="axis-row">
-                        <button @click="doSlew('dec', -1)" title="DEC −">◀</button>
+                        <button @click="doSlew('dec', -1)" :disabled="isError" title="DEC −">◀</button>
                         <span class="axis-label">DEC</span>
-                        <button @click="doSlew('dec', 1)" title="DEC +">▶</button>
+                        <button @click="doSlew('dec', 1)" :disabled="isError" title="DEC +">▶</button>
                     </div>
                 </div>
             </div>
@@ -729,24 +846,28 @@ footer code {
     <div class="panel">
         <div class="panel-header">
             <div class="panel-dot"></div>
-            <strong>Joystick</strong> <span class="hint">(hold to move, release to stop)</span>
+            <strong>Move Axis</strong> <span class="hint">(hold to move, release to stop)</span>
         </div>
         <div class="axis-grid">
             <div class="axis-row">
                 <button class="joy-btn"
+                        :disabled="isError"
                         @pointerdown="joyStart('ra', -1)" @pointerup="joyStop('ra')"
                         @pointerleave="joyStop('ra')" title="RA −">◀</button>
                 <span class="axis-label">RA</span>
                 <button class="joy-btn"
+                        :disabled="isError"
                         @pointerdown="joyStart('ra', 1)" @pointerup="joyStop('ra')"
                         @pointerleave="joyStop('ra')" title="RA +">▶</button>
             </div>
             <div class="axis-row">
                 <button class="joy-btn"
+                        :disabled="isError"
                         @pointerdown="joyStart('dec', -1)" @pointerup="joyStop('dec')"
                         @pointerleave="joyStop('dec')" title="DEC −">◀</button>
                 <span class="axis-label">DEC</span>
                 <button class="joy-btn"
+                        :disabled="isError"
                         @pointerdown="joyStart('dec', 1)" @pointerup="joyStop('dec')"
                         @pointerleave="joyStop('dec')" title="DEC +">▶</button>
             </div>
@@ -786,7 +907,7 @@ footer code {
                 </div>
 
                 <div class="slew-field">
-                    <label>Velocidad</label>
+                    <label>Speed</label>
                     <select x-model.number="slewTarget.speed">
                         <option value="1">1×</option>
                         <option value="2">2×</option>
@@ -798,7 +919,7 @@ footer code {
 
             <!-- Right: Slew button (bottom-aligned) -->
             <div class="slew-btn-col">
-                <button class="primary" @click="doSlewToCoordinates()">SLEW</button>
+                <button class="primary" @click="doSlewToCoordinates()" :disabled="isError">SLEW</button>
             </div>
         </div>
     </div>
@@ -807,25 +928,28 @@ footer code {
     <div class="panel" x-show="wifiAp">
         <div class="panel-header">
             <div class="panel-dot"></div>
-            <strong>Configuración Wi-Fi</strong>
+            <strong>Wi-Fi Setup</strong>
         </div>
         <div class="row">
             <input placeholder="SSID" x-model="wifi.ssid">
             <input placeholder="Password" x-model="wifi.password" type="text">
             <button class="primary"
                     @click="apiPost('/api/wifi-config', {ssid: wifi.ssid, password: wifi.password}).then(() => fetchStatus())">
-                Conectar
+                Connect
             </button>
         </div>
-        <div class="wifi-warning">La red no está configurada. Conectar ahora para salir del modo AP.</div>
+        <div class="wifi-warning">Network not configured. Connect now to leave AP mode.</div>
     </div>
 
     <!-- ═══ Error banner ═══ -->
+    <div class="fatal-banner" x-show="isError">
+        MOTOR ERROR &mdash; reboot required. Mount will not accept movement commands.
+    </div>
     <div class="error-banner" x-show="errorMessage" x-text="errorMessage"
          x-transition.opacity.duration.200ms></div>
 
     <!-- ═══ Footer ═══ -->
-    <footer>NRM-WO · SPA embebida · REST <code>/api/*</code></footer>
+    <footer>NRM-WO · Embedded SPA · REST <code>/api/*</code></footer>
 
 </div>
 
@@ -835,6 +959,8 @@ footer code {
         lst: '--:--:--',
         pierSide: '--',
         statusText: 'UNKNOWN',
+        isError: false,
+        debug: {},
         settings: {lat: 0, lon: 0, elevation: 0},
         mountTime: '--',
         timeAutoSet: false,
@@ -866,10 +992,10 @@ footer code {
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify(body)
             }).then(r => r.json()).then(j => {
-                if (!j.ok) this.showError(j.message || 'Error desconocido');
+                if (!j.ok) this.showError(j.message || 'Unknown error');
                 return j;
             }).catch(e => {
-                this.showError('Red o servidor no disponible');
+                this.showError('Network or server unavailable');
                 throw e;
             });
         },
@@ -884,7 +1010,9 @@ footer code {
                 this.serverTracking = j.tracking || 'none';
                 this.wifiAp = j.wifi_ap || false;
                 this.isHome = j.is_home || false;
-                this.isParked = (j.status === 'PARKED');
+                this.isParked = (j.status === 'parked');
+                this.isError = (j.status === 'error');
+                this.debug = j.debug || {};
 
                 const s = j.settings;
                 if (s) {
@@ -960,11 +1088,11 @@ footer code {
             const ds = this.slewTarget.dec.s;
 
             if (isNaN(rh) || rh < 0 || rh > 23 || isNaN(rm) || rm < 0 || rm > 59 || isNaN(rs) || rs < 0 || rs >= 60) {
-                this.showError('RA inválida — H: 0–23, M: 0–59, S: 0–59.999');
+                this.showError('Invalid RA — H: 0–23, M: 0–59, S: 0–59.999');
                 return;
             }
             if (isNaN(dd) || dd < -180 || dd > 180 || isNaN(dm) || dm < 0 || dm > 59 || isNaN(ds) || ds < 0 || ds >= 60) {
-                this.showError('DEC inválida — D: −180…+180, M: 0–59, S: 0–59.999');
+                this.showError('Invalid DEC — D: −180…+180, M: 0–59, S: 0–59.999');
                 return;
             }
 
@@ -992,6 +1120,16 @@ footer code {
                 lon: this.settings.lon || 0,
                 elevation: this.settings.elevation || 0
             }).then(() => this.fetchStatus());
+        },
+
+        fmtUptime(s) {
+            if (s == null) return '—';
+            const h = Math.floor(s / 3600);
+            const m = Math.floor((s % 3600) / 60);
+            const sec = s % 60;
+            if (h > 0) return h + 'h ' + m + 'm ' + sec + 's';
+            if (m > 0) return m + 'm ' + sec + 's';
+            return sec + 's';
         },
 
         init() {

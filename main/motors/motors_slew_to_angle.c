@@ -26,11 +26,18 @@ static const char *TAG = "MOTORS_SLEW_TO_ANGLE";
  *   speed_rate — slew profile (1=1°/s, 2=3°/s, 3=6°/s, default=10°/s)
  */
 MotorResultCode motors_slew_to_angle(float ra_deg, float dec_deg, int speed_rate) {
+    if (motors_state.status == MOTORS_STATUS_ERROR) {
+        return MOTOR_ERR_HARDWARE_ERROR;
+    }
+
     TrackingMode currTracking = TRACKING_NONE;
     if (motors_state.status == MOTORS_STATUS_TRACKING
         && motors_state.tracking != TRACKING_NONE) {
         currTracking = motors_state.tracking;
-        motors_stop();
+        MotorResultCode stop_rc = motors_stop();
+        if (stop_rc != MOTOR_OK) {
+            return stop_rc;
+        }
     }
 
     if (!motors_is_valid_ra(ra_deg)) {

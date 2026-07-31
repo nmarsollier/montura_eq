@@ -12,7 +12,6 @@
 #include "motors.h"
 #include "mount.h"
 #include "wifi.h"
-#include "tmc.h"
 #include "usb_net.h"
 
 static const char *TAG = "RUNTIME_SETUP";
@@ -22,6 +21,10 @@ static const char *TAG = "RUNTIME_SETUP";
  *
  * Objective: bring network, core services, and peripherals online so the
  * mount starts in a usable state.
+ *
+ * LED state is managed exclusively by led_update() in the runtime loop —
+ * no explicit led_set_state() calls are needed here.  The loop picks up
+ * motor status and WiFi status on its first tick.
  */
 void setup_init(void) {
     ESP_LOGI(TAG, "Setting up mount");
@@ -38,14 +41,6 @@ void setup_init(void) {
     led_init();
 
     /*
-     * WiFi error: setup AP running means home wifi didn't connect.
-     * Recoverable — a later successful connection calls led_clear_error().
-     */
-    if (wifi_is_setup_ap_started()) {
-        led_set_state(LED_STATE_ERROR);
-    }
-
-    /*
      * USB Ethernet (ECM/RNDIS) — non-fatal, mount works without USB.
      * Blocking call with 10 s timeout for host enumeration.
      */
@@ -58,18 +53,8 @@ void setup_init(void) {
 
     esp_err_t motors_err = motors_init();
     if (motors_err != ESP_OK) {
-        ESP_LOGE(TAG, "motors_init failed: %s — mount disabled",
+        ESP_LOGE(TAG, "motors_init failed: %s — mount in ERROR state, reboot required",
                  esp_err_to_name(motors_err));
-        led_set_state(LED_STATE_ERROR);
-        /* Continue boot — REST/network still functional for diagnostics. */
-    }
-
-    /*
-     * UART / TMC error: permanent in practice because no code path
-     * calls led_clear_error() for it — only a reboot resets it.
-     */
-    if (!tmc2209_is_initialized()) {
-        led_set_state(LED_STATE_ERROR);
     }
 
     ESP_LOGI(TAG, "Mount ready");

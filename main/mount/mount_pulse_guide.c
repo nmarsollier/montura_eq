@@ -20,6 +20,10 @@
 static const char *TAG = "MOUNT_PULSE_GUIDE";
 
 MountResult mount_pulse_guide(GuideDirection direction, uint32_t duration_ms) {
+    if (mount_is_motors_error()) {
+        return mount_result_motors_error();
+    }
+
     /* PulseGuide is only valid in READY (calibration) or TRACKING (guiding). */
     MotorsState state = motors_current_state();
     if (state.status != MOTORS_STATUS_READY &&
@@ -36,24 +40,25 @@ MountResult mount_pulse_guide(GuideDirection direction, uint32_t duration_ms) {
     float ra_rate = mount_get_guide_rate_ra();
     float dec_rate = mount_get_guide_rate_dec();
 
+    MotorResultCode rc;
     switch (direction) {
     case GUIDE_DIRECTION_EAST:
-        motors_pulse_guide_start(0,  ra_rate, duration_ms);
+        rc = motors_pulse_guide_start(0,  ra_rate, duration_ms);
         break;
     case GUIDE_DIRECTION_WEST:
-        motors_pulse_guide_start(0, -ra_rate, duration_ms);
+        rc = motors_pulse_guide_start(0, -ra_rate, duration_ms);
         break;
     case GUIDE_DIRECTION_NORTH:
-        motors_pulse_guide_start(1,  dec_rate, duration_ms);
+        rc = motors_pulse_guide_start(1,  dec_rate, duration_ms);
         break;
     case GUIDE_DIRECTION_SOUTH:
-        motors_pulse_guide_start(1, -dec_rate, duration_ms);
+        rc = motors_pulse_guide_start(1, -dec_rate, duration_ms);
         break;
     default:
         return mount_result_error("Invalid guide direction");
     }
 
-    return mount_result_ok();
+    return motors_result_code_error_result(rc);
 }
 
 /* ── Guide rate storage (deg/s) — per axis for Alpaca compliance ── */

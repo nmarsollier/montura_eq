@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="es">
+<html lang="en">
 
 <head>
     <meta charset="utf-8"/>
@@ -22,14 +22,11 @@
     <!-- ═══ Status ═══ -->
     <div class="panel">
         <div class="status-row">
-            <span class="status-badge" x-text="statusText"></span>
-            <span class="status-badge" x-show="isHome" style="background:#4caf50;color:#fff">HOME</span>
-            <span class="status-badge" x-show="isParked" style="background:#ff9800;color:#fff">PARKED</span>
-            <div style="flex:1"></div>
             <span class="coords"><span class="coords-label">RA</span> <span x-text="status.ra"></span></span>
             <span class="coords"><span class="coords-label">DEC</span> <span x-text="status.dec"></span></span>
             <span class="coords" style="opacity:0.7"><span class="coords-label">LST</span> <span x-text="lst"></span></span>
-            <span class="coords" style="opacity:0.7"><span class="coords-label">Pier</span> <span x-text="pierSide"></span></span>
+            <div style="flex:1"></div>
+            <span class="status-badge" x-text="statusText" :class="{ 'status-error': isError }"></span>
         </div>
         <div class="info-row">
             <div>Tracking <span x-text="serverTracking"></span></div>
@@ -40,35 +37,74 @@
         </div>
     </div>
 
-    <!-- ═══ Site & Time ═══ -->
+    <!-- ═══ Debug ═══ -->
     <div class="panel">
         <div class="panel-header">
             <div class="panel-dot"></div>
-            <strong>Configuración</strong>
+            <strong>Debug</strong>
+            <span class="hint">— internal diagnostics</span>
+        </div>
+        <div class="debug-grid">
+            <div class="debug-group">
+                <div class="debug-label">RA Axis</div>
+                <div class="debug-row"><span>Angle</span> <span x-text="debug.ra_axis_deg?.toFixed(4) + '°'"></span></div>
+                <div class="debug-row"><span>Steps</span> <span x-text="debug.ra_steps"></span></div>
+                <div class="debug-row"><span>Speed</span> <span x-text="debug.ra_speed?.toFixed(6) + ' °/s'"></span></div>
+            </div>
+            <div class="debug-group">
+                <div class="debug-label">DEC Axis</div>
+                <div class="debug-row"><span>Angle</span> <span x-text="debug.dec_axis_deg?.toFixed(4) + '°'"></span></div>
+                <div class="debug-row"><span>Steps</span> <span x-text="debug.dec_steps"></span></div>
+                <div class="debug-row"><span>Speed</span> <span x-text="debug.dec_speed?.toFixed(6) + ' °/s'"></span></div>
+            </div>
+            <div class="debug-group">
+                <div class="debug-label">Hardware</div>
+                <div class="debug-row"><span>TMC init</span> <span x-text="debug.tmc_ok ? 'OK' : 'FAIL'" :class="debug.tmc_ok ? 'debug-ok' : 'debug-fail'"></span></div>
+                <div class="debug-row"><span>Microsteps</span> <span x-text="debug.microsteps"></span></div>
+                <div class="debug-row"><span>Guiding</span> <span x-text="debug.guiding ? '✓' : '—'"></span></div>
+            </div>
+            <div class="debug-group">
+                <div class="debug-label">Limits (°)</div>
+                <div class="debug-row"><span>RA</span> <span x-text="'[' + debug.limits?.ra_min + ', ' + debug.limits?.ra_max + ']'"></span></div>
+                <div class="debug-row"><span>DEC</span> <span x-text="'[' + debug.limits?.dec_min + ', ' + debug.limits?.dec_max + ']'"></span></div>
+            </div>
+            <div class="debug-group">
+                <div class="debug-label">Network</div>
+                <div class="debug-row"><span>WiFi IP</span> <span x-text="debug.wifi_ip || '—'"></span></div>
+                <div class="debug-row"><span>Uptime</span> <span x-text="fmtUptime(debug.uptime_s)"></span></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══ Settings ═══ -->
+    <div class="panel">
+        <div class="panel-header">
+            <div class="panel-dot"></div>
+            <strong>Settings</strong>
         </div>
 
         <!-- Time row -->
         <div class="settings-row">
             <span class="settings-fields">
-                <span class="settings-label">Fecha y hora</span>
+                <span class="settings-label">Date &amp; time</span>
                 <span class="settings-value" x-text="mountTime">--</span>
             </span>
-            <button @click="updateTime()">Actualizar</button>
+            <button @click="updateTime()">Update</button>
         </div>
 
         <!-- Location row -->
         <div class="settings-row">
-            <span class="settings-label">Ubicación</span>
+            <span class="settings-label">Location</span>
             <span class="settings-fields">
                 <input type="text" inputmode="decimal" placeholder="Lat"
-                       x-model.number="settings.lat" class="settings-input" title="Latitud">
+                       x-model.number="settings.lat" class="settings-input" title="Latitude">
                 <input type="text" inputmode="decimal" placeholder="Lon"
-                       x-model.number="settings.lon" class="settings-input" title="Longitud">
+                       x-model.number="settings.lon" class="settings-input" title="Longitude">
                 <input type="text" inputmode="numeric" placeholder="Elev"
                        x-model.number="settings.elevation" class="settings-input settings-input-short"
-                       title="Elevación (m)">
+                       title="Elevation (m)">
             </span>
-            <button @click="updateSettings()">Actualizar</button>
+            <button @click="updateSettings()">Update</button>
         </div>
     </div>
 
@@ -77,14 +113,14 @@
         <div class="panel">
             <div class="panel-header">
                 <div class="panel-dot"></div>
-                <strong>Acciones</strong>
+                <strong>Actions</strong>
             </div>
             <div class="row">
-                <button class="danger" @click="stop()">STOP</button>
-                <button @click="home()">HOME</button>
-                <button @click="zeroPosition()">ZERO</button>
-                <button @click="park()" x-show="!isParked">PARK</button>
-                <button @click="unpark()" x-show="isParked">UNPARK</button>
+                <button class="danger" @click="stop()" :disabled="isError">STOP</button>
+                <button @click="home()" :disabled="isError">HOME</button>
+                <button @click="zeroPosition()" :disabled="isError">ZERO</button>
+                <button @click="park()" x-show="!isParked" :disabled="isError">PARK</button>
+                <button @click="unpark()" x-show="isParked" :disabled="isError">UNPARK</button>
             </div>
         </div>
 
@@ -99,7 +135,7 @@
                         <option :value="i" x-text="m"></option>
                     </template>
                 </select>
-                <button class="primary" @click="setTracking()">Set</button>
+                <button class="primary" @click="setTracking()" :disabled="isError">Set</button>
             </div>
         </div>
     </div>
@@ -112,17 +148,17 @@
         </div>
 
         <div class="slew-layout">
-            <!-- Left: Grados + Velocidad -->
+            <!-- Left: Degrees + Speed -->
             <div class="slew-controls">
                 <div class="slew-field">
-                    <label>Grados (1–90°)</label>
+                    <label>Degrees (1–90°)</label>
                     <div class="slew-field-row">
                         <input type="text" inputmode="decimal" x-model.number="slew.degrees">
                     </div>
                 </div>
 
                 <div class="slew-field">
-                    <label>Velocidad</label>
+                    <label>Speed</label>
                     <select x-model.number="slew.speed">
                         <option value="1">1×</option>
                         <option value="2">2×</option>
@@ -136,14 +172,14 @@
             <div class="slew-pad">
                 <div class="axis-grid">
                     <div class="axis-row">
-                        <button @click="doSlew('ra', -1)" title="RA −">◀</button>
+                        <button @click="doSlew('ra', -1)" :disabled="isError" title="RA −">◀</button>
                         <span class="axis-label">RA</span>
-                        <button @click="doSlew('ra', 1)" title="RA +">▶</button>
+                        <button @click="doSlew('ra', 1)" :disabled="isError" title="RA +">▶</button>
                     </div>
                     <div class="axis-row">
-                        <button @click="doSlew('dec', -1)" title="DEC −">◀</button>
+                        <button @click="doSlew('dec', -1)" :disabled="isError" title="DEC −">◀</button>
                         <span class="axis-label">DEC</span>
-                        <button @click="doSlew('dec', 1)" title="DEC +">▶</button>
+                        <button @click="doSlew('dec', 1)" :disabled="isError" title="DEC +">▶</button>
                     </div>
                 </div>
             </div>
@@ -154,24 +190,28 @@
     <div class="panel">
         <div class="panel-header">
             <div class="panel-dot"></div>
-            <strong>Joystick</strong> <span class="hint">(hold to move, release to stop)</span>
+            <strong>Move Axis</strong> <span class="hint">(hold to move, release to stop)</span>
         </div>
         <div class="axis-grid">
             <div class="axis-row">
                 <button class="joy-btn"
+                        :disabled="isError"
                         @pointerdown="joyStart('ra', -1)" @pointerup="joyStop('ra')"
                         @pointerleave="joyStop('ra')" title="RA −">◀</button>
                 <span class="axis-label">RA</span>
                 <button class="joy-btn"
+                        :disabled="isError"
                         @pointerdown="joyStart('ra', 1)" @pointerup="joyStop('ra')"
                         @pointerleave="joyStop('ra')" title="RA +">▶</button>
             </div>
             <div class="axis-row">
                 <button class="joy-btn"
+                        :disabled="isError"
                         @pointerdown="joyStart('dec', -1)" @pointerup="joyStop('dec')"
                         @pointerleave="joyStop('dec')" title="DEC −">◀</button>
                 <span class="axis-label">DEC</span>
                 <button class="joy-btn"
+                        :disabled="isError"
                         @pointerdown="joyStart('dec', 1)" @pointerup="joyStop('dec')"
                         @pointerleave="joyStop('dec')" title="DEC +">▶</button>
             </div>
@@ -211,7 +251,7 @@
                 </div>
 
                 <div class="slew-field">
-                    <label>Velocidad</label>
+                    <label>Speed</label>
                     <select x-model.number="slewTarget.speed">
                         <option value="1">1×</option>
                         <option value="2">2×</option>
@@ -223,7 +263,7 @@
 
             <!-- Right: Slew button (bottom-aligned) -->
             <div class="slew-btn-col">
-                <button class="primary" @click="doSlewToCoordinates()">SLEW</button>
+                <button class="primary" @click="doSlewToCoordinates()" :disabled="isError">SLEW</button>
             </div>
         </div>
     </div>
@@ -232,25 +272,28 @@
     <div class="panel" x-show="wifiAp">
         <div class="panel-header">
             <div class="panel-dot"></div>
-            <strong>Configuración Wi-Fi</strong>
+            <strong>Wi-Fi Setup</strong>
         </div>
         <div class="row">
             <input placeholder="SSID" x-model="wifi.ssid">
             <input placeholder="Password" x-model="wifi.password" type="text">
             <button class="primary"
                     @click="apiPost('/api/wifi-config', {ssid: wifi.ssid, password: wifi.password}).then(() => fetchStatus())">
-                Conectar
+                Connect
             </button>
         </div>
-        <div class="wifi-warning">La red no está configurada. Conectar ahora para salir del modo AP.</div>
+        <div class="wifi-warning">Network not configured. Connect now to leave AP mode.</div>
     </div>
 
     <!-- ═══ Error banner ═══ -->
+    <div class="fatal-banner" x-show="isError">
+        MOTOR ERROR &mdash; reboot required. Mount will not accept movement commands.
+    </div>
     <div class="error-banner" x-show="errorMessage" x-text="errorMessage"
          x-transition.opacity.duration.200ms></div>
 
     <!-- ═══ Footer ═══ -->
-    <footer>NRM-WO · SPA embebida · REST <code>/api/*</code></footer>
+    <footer>NRM-WO · Embedded SPA · REST <code>/api/*</code></footer>
 
 </div>
 

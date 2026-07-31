@@ -1,12 +1,10 @@
 /* LED — led_set_state.c
  *
- * Purpose: LED state machine — brightness transitions and error handling.
+ * Purpose: apply LED state transitions (dim / bright / breathing).
  *
- * NORMAL <-> SLEWING transitions use a 1-second hardware fade.
- * ERROR is sticky: once entered, further set_state calls are ignored.
- * ERROR can only be cleared by led_clear_error(), which is called
- * exclusively from the wifi IP handler — so UART errors are de-facto
- * permanent because nothing ever clears them.
+ * This is an internal helper called exclusively from led_update().
+ * Other modules must never call this directly — led_update() is the
+ * single public entry point that decides the correct state.
  */
 #include "led_internal.h"
 
@@ -37,42 +35,31 @@ static void apply_slewing(void) {
     led_start_fade(LED_BRIGHT_DUTY, LED_FADE_MS);
 }
 
-/* ── Public API ────────────────────────────────────────────── */
+/* ── Internal API ──────────────────────────────────────────── */
 
 void led_set_state(LedState state) {
-    /* ERROR is sticky — ignore further transitions. */
-    if (led_current_state == LED_STATE_ERROR) {
-        return;
-    }
-
     if (state == led_current_state) {
         return;
     }
 
-    ESP_LOGI(TAG, "state: %d -> %d", led_current_state, state);
     led_current_state = state;
 
     switch (state) {
     case LED_STATE_NORMAL:
+        led_breathe_stop();
         apply_normal();
         break;
     case LED_STATE_SLEWING:
+        led_breathe_stop();
         apply_slewing();
         break;
     case LED_STATE_ERROR:
         led_breathe_stop();
-        led_breathe_start();
+        led_breathe_start(BREATHE_PATTERN_SMOOTH);
+        break;
+    case LED_STATE_WIFI_WAIT:
+        led_breathe_stop();
+        led_breathe_start(BREATHE_PATTERN_HEARTBEAT);
         break;
     }
-}
-
-void led_clear_error(void) {
-    if (led_current_state != LED_STATE_ERROR) {
-        return;
-    }
-
-    ESP_LOGI(TAG, "clearing error -> NORMAL");
-    led_breathe_stop();
-    led_current_state = LED_STATE_NORMAL;
-    apply_normal();
 }

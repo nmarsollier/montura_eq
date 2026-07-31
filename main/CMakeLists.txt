@@ -12,6 +12,7 @@ idf_component_register(
 
         "motors/motors_current_state.c"
         "motors/motors_enable.c"
+        "motors/motors_enter_error_state.c"
         "motors/motors_get_slewing_speed.c"
         "motors/motors_get_tracking_speed.c"
         "motors/motors_home.c"

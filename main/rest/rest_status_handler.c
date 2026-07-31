@@ -3,7 +3,11 @@
 #include <stdio.h>
 #include <time.h>
 
+#include "esp_timer.h"
+
 #include "mount.h"
+#include "motors/motors.h"
+#include "tmc/tmc.h"
 
 #include "utils/utils.h"
 #include "wifi/wifi.h"
@@ -51,7 +55,26 @@ esp_err_t rest_status_handler(httpd_req_t *request) {
             "\"elevation\":%d"
             "},"
             "\"wifi_ap\":%s,"
-            "\"is_home\":%s"
+            "\"is_home\":%s,"
+            "\"debug\":{"
+            "\"ra_axis_deg\":%.6f,"
+            "\"dec_axis_deg\":%.6f,"
+            "\"ra_steps\":%lld,"
+            "\"dec_steps\":%lld,"
+            "\"ra_speed\":%.6f,"
+            "\"dec_speed\":%.6f,"
+            "\"guiding\":%s,"
+            "\"tmc_ok\":%s,"
+            "\"microsteps\":%u,"
+            "\"limits\":{"
+            "\"ra_min\":%.1f,"
+            "\"ra_max\":%.1f,"
+            "\"dec_min\":%.1f,"
+            "\"dec_max\":%.1f"
+            "},"
+            "\"wifi_ip\":\"%s\","
+            "\"uptime_s\":%lu"
+            "}"
             "}";
 
     const char *status = motors_status_to_string(data.status);
@@ -59,10 +82,13 @@ esp_err_t rest_status_handler(httpd_req_t *request) {
     char dec_sign = data.dec.sign >= 0 ? '+' : '-';
     bool wifi_ap = wifi_is_setup_ap_started();
 
+    /* Debug: raw motor state for diagnostics. */
+    MotorsState ms = motors_current_state();
+
     /*
-     * Fixed-size buffer — the JSON response with LST + pier_side fits in 640 bytes.
+     * Fixed-size buffer — the JSON response with debug section fits in 1280 bytes.
      */
-    char response[640];
+    char response[1280];
     snprintf(response, sizeof(response), format,
              status, tracking,
              data.ra.hours, data.ra.minutes, data.ra.seconds,
@@ -72,7 +98,18 @@ esp_err_t rest_status_handler(httpd_req_t *request) {
              time_buf,
              data.settings.lat, data.settings.lon, data.settings.elevation,
              wifi_ap ? "true" : "false",
-             is_home ? "true" : "false");
+             is_home ? "true" : "false",
+             /* debug */
+             motors_get_ra_deg(), motors_get_dec_deg(),
+             ms.ra_steps, ms.dec_steps,
+             ms.ra_speed, ms.dec_speed,
+             ms.guiding ? "true" : "false",
+             tmc2209_is_initialized() ? "true" : "false",
+             TMC_TARGET_MICROSTEPS,
+             ms.limits.ra_min, ms.limits.ra_max,
+             ms.limits.dec_min, ms.limits.dec_max,
+             wifi_ip,
+             (unsigned long) (esp_timer_get_time() / 1000000));
 
     http_response_json(request, response);
 

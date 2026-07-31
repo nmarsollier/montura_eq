@@ -7,9 +7,14 @@
 #include "motors.h"
 #include "motors_internal.h"
 
-void motors_park(void) {
+MotorResultCode motors_park(void) {
+    if (motors_state.status == MOTORS_STATUS_ERROR) {
+        return MOTOR_ERR_HARDWARE_ERROR;
+    }
+
     motors_queue_clear();
     motors_motion_stop();
     motors_state.status = MOTORS_STATUS_PARKED;
     motors_state.tracking = TRACKING_NONE;
+    return MOTOR_OK;
 }

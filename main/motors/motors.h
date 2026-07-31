@@ -16,6 +16,10 @@ typedef enum {
     MOTORS_STATUS_TRACKING,
     /* Parked: mount in safe parked position. */
     MOTORS_STATUS_PARKED,
+    /* Unrecoverable hardware error: TMC/motor init failed. Only reboot clears it.
+     * Higher precedence than DISABLED — ERROR means hardware fault, DISABLED
+     * is a soft state that should never override ERROR. */
+    MOTORS_STATUS_ERROR,
     /* Disabled: motors unavailable or disabled by user. */
     MOTORS_STATUS_DISABLED
 } MotorsStatus;
@@ -83,6 +87,7 @@ typedef enum {
     MOTOR_ERR_INVALID_AXIS = 1,
     MOTOR_ERR_OUT_OF_RANGE = 2,
     MOTOR_ERR_NOT_READY = 3,
+    MOTOR_ERR_HARDWARE_ERROR = 4,
     MOTOR_ERR_INTERNAL = 99
 } MotorResultCode;
 
@@ -93,9 +98,10 @@ typedef enum {
 esp_err_t motors_init(void);
 
 /*
- * Enable motor drivers.
+ * Enable motor drivers. Returns MOTOR_ERR_HARDWARE_ERROR if motors
+ * are in the unrecoverable ERROR state.
  */
-void motors_enable(void);
+MotorResultCode motors_enable(void);
 
 /*
  * Return a snapshot copy of the current `MotorsState`.
@@ -112,18 +118,22 @@ float motors_get_dec_deg(void);
 
 /*
  * Stop both axes and return to READY.
+ * Returns MOTOR_ERR_HARDWARE_ERROR if motors are in ERROR state
+ * (stop is rejected — motors are already physically disabled).
  */
-void motors_stop(void);
+MotorResultCode motors_stop(void);
 
 /*
  * Park both axes: stop motion and set status to PARKED.
+ * Returns MOTOR_ERR_HARDWARE_ERROR if motors are in ERROR state.
  */
-void motors_park(void);
+MotorResultCode motors_park(void);
 
 /*
  * Move the mount to the home position (0, 0).
+ * Returns MOTOR_ERR_HARDWARE_ERROR if motors are in ERROR state.
  */
-void motors_home(void);
+MotorResultCode motors_home(void);
 
 /*
  * Set the current physical position as the new zero reference.
@@ -141,8 +151,9 @@ MotorResultCode motors_start_tracking(TrackingMode mode);
  * Positive = forward, negative = reverse, zero = stop that axis.
  * Both zero is equivalent to STOP.  Used by Alpaca MoveAxis and
  * manual controls (joystick).
+ * Returns MOTOR_ERR_HARDWARE_ERROR if motors are in ERROR state.
  */
-void motors_set_move_axis_speed(float ra_speed, float dec_speed);
+MotorResultCode motors_set_move_axis_speed(float ra_speed, float dec_speed);
 
 /*
  * Return the slewing angular speed (deg/s) for a given speed_rate profile.
@@ -175,8 +186,10 @@ MotorResultCode motors_slew_axis_dec(float degrees, int speed_rate);
  * axis: 0 = RA, 1 = DEC
  * offset_dps: signed angular speed offset in deg/s
  * duration_ms: guide pulse duration in milliseconds
+ *
+ * Returns MOTOR_ERR_HARDWARE_ERROR if motors are in ERROR state.
  */
-void motors_pulse_guide_start(int axis, float offset_dps, uint32_t duration_ms);
+MotorResultCode motors_pulse_guide_start(int axis, float offset_dps, uint32_t duration_ms);
 
 /*
  * Return true if a PulseGuide is active on either axis.

@@ -335,6 +335,7 @@ esp_err_t tmc2209_hw_init(void)
     if (!all_ok) {
         ESP_LOGE(TAG, "One or more axes failed UART verification — microsteps not trusted, mount in error state");
         tmc2209_set_active_microsteps(0);
+        return ESP_FAIL;
     }
 
     return ESP_OK;

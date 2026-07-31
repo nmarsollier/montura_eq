@@ -9,7 +9,11 @@
 #include "motors.h"
 #include "motors_internal.h"
 
-void motors_home(void) {
+MotorResultCode motors_home(void) {
+    if (motors_state.status == MOTORS_STATUS_ERROR) {
+        return MOTOR_ERR_HARDWARE_ERROR;
+    }
+
     motors_stop();
-    motors_slew_to_angle(0.0f, 0.0f, 0);
+    return motors_slew_to_angle(0.0f, 0.0f, 0);
 }

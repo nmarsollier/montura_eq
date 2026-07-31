@@ -15,7 +15,6 @@
  * - ESP-IDF persists those credentials internally.
  */
 #include "wifi.h"
-#include "led.h"
 
 #include <string.h>
 
@@ -172,9 +171,6 @@ static void ip_event_handler(
     }
 
     xEventGroupSetBits(wifi_event_group, WIFI_CONNECTED_BIT);
-
-    /* If the LED was stuck in wifi-error breathing, clear it now. */
-    led_clear_error();
 }
 
 static void start_home_wifi(void) {

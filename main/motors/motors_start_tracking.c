@@ -9,9 +9,12 @@
 #include "motors_internal.h"
 
 MotorResultCode motors_start_tracking(TrackingMode mode) {
+    if (motors_state.status == MOTORS_STATUS_ERROR) {
+        return MOTOR_ERR_HARDWARE_ERROR;
+    }
+
     if (mode == TRACKING_NONE) {
-        motors_stop();
-        return MOTOR_OK;
+        return motors_stop();
     }
 
     float ra_speed = motors_get_tracking_speed(mode);

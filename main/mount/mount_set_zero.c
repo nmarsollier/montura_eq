@@ -13,6 +13,10 @@
 #include "motors.h"
 
 MountResult mount_set_zero(void) {
+    if (mount_is_motors_error()) {
+        return mount_result_motors_error();
+    }
+
     MotorResultCode rc = motors_set_zero();
     return motors_result_code_error_result(rc);
 }

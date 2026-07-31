@@ -10,6 +10,7 @@ void wifi_sntp_start(void);
 
 extern bool wifi_started;
 extern int  wifi_retry_count;
+extern char wifi_ip[17];
 
 #define WIFI_SETUP_AP_SSID "NRM-WO"
 #define WIFI_SETUP_AP_PASSWORD ""

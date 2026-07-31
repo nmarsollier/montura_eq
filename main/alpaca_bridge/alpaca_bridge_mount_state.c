@@ -12,16 +12,19 @@
 
 bool alpaca_bridge_get_is_slewing(void) {
     MotorsState s = motors_current_state();
+    if (s.status == MOTORS_STATUS_ERROR) return false;
     return s.status == MOTORS_STATUS_SLEWING;
 }
 
 bool alpaca_bridge_get_is_tracking(void) {
     MotorsState s = motors_current_state();
+    if (s.status == MOTORS_STATUS_ERROR) return false;
     return s.status == MOTORS_STATUS_TRACKING;
 }
 
 bool alpaca_bridge_get_is_parked(void) {
     MotorsState s = motors_current_state();
+    if (s.status == MOTORS_STATUS_ERROR) return false;
     return s.status == MOTORS_STATUS_PARKED;
 }
 
@@ -31,6 +34,7 @@ bool alpaca_bridge_get_is_parked(void) {
  */
 bool alpaca_bridge_get_is_home(void) {
     MotorsState s = motors_current_state();
+    if (s.status == MOTORS_STATUS_ERROR) return false;
     float ra = motors_get_ra_deg();
     float dec = motors_get_dec_deg();
     return s.status == MOTORS_STATUS_READY &&

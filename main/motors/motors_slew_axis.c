@@ -14,11 +14,18 @@
 static const char *TAG = "MOTORS_SLEW_AXIS";
 
 static MotorResultCode motors_slew_axis_impl(float ra_delta_deg, float dec_delta_deg) {
+    if (motors_state.status == MOTORS_STATUS_ERROR) {
+        return MOTOR_ERR_HARDWARE_ERROR;
+    }
+
     TrackingMode currTracking = TRACKING_NONE;
     if (motors_state.status == MOTORS_STATUS_TRACKING
         && motors_state.tracking != TRACKING_NONE) {
         currTracking = motors_state.tracking;
-        motors_stop();
+        MotorResultCode stop_rc = motors_stop();
+        if (stop_rc != MOTOR_OK) {
+            return stop_rc;
+        }
     }
 
     MotionCommand cmd = {

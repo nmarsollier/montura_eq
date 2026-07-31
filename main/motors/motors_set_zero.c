@@ -10,7 +10,14 @@
 #include "motors_internal.h"
 
 MotorResultCode motors_set_zero(void) {
-    motors_stop();
+    if (motors_state.status == MOTORS_STATUS_ERROR) {
+        return MOTOR_ERR_HARDWARE_ERROR;
+    }
+
+    MotorResultCode rc = motors_stop();
+    if (rc != MOTOR_OK) {
+        return rc;
+    }
 
     motors_state.ra_steps = 0;
     motors_state.dec_steps = 0;

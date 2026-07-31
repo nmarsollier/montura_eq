@@ -31,6 +31,7 @@ int alpaca_bridge_get_tracking_rate(void) {
  */
 bool alpaca_bridge_get_tracking(void) {
     MotorsState s = motors_current_state();
+    if (s.status == MOTORS_STATUS_ERROR) return false;
     return s.tracking != TRACKING_NONE;
 }
 

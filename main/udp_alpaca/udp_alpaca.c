@@ -16,6 +16,7 @@
 #include "esp_log.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
+#include "motors/motors.h"
 
 static const char *TAG = "UDP_ALPACA";
 
@@ -81,9 +82,13 @@ static void udp_alpaca_task(void *arg) {
                  buf);
 
         if (strstr(buf, "alpacadiscovery1") != NULL) {
-            sendto(sock, response, strlen(response), 0,
-                   (struct sockaddr *) &sender_addr, sender_len);
-            ESP_LOGI(TAG, "discovery response sent");
+            if (motors_current_state().status == MOTORS_STATUS_ERROR) {
+                ESP_LOGW(TAG, "motors in ERROR — suppressing discovery response");
+            } else {
+                sendto(sock, response, strlen(response), 0,
+                       (struct sockaddr *) &sender_addr, sender_len);
+                ESP_LOGI(TAG, "discovery response sent");
+            }
         }
     }
 }

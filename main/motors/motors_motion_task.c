@@ -215,6 +215,20 @@ void motors_motion_stop(void) {
  * Motion conditions check — returns false when the current motion should end.
  * -------------------------------------------------------------------------- */
 static bool check_motion_conditions(void) {
+    /*
+     * Motor ERROR — immediate abort of any active motion.
+     *
+     * If the motors subsystem enters ERROR state while slewing or
+     * tracking, kill RMT output and physically disable the drivers
+     * on the spot.  This is the emergency cut-off: no deceleration,
+     * no position cleanup — just stop NOW.
+     */
+    if (motors_state.status == MOTORS_STATUS_ERROR) {
+        motors_enter_error_state();
+        s_motion.active = false;
+        return false;
+    }
+
     int64_t ra_diff = s_motion.ra_target - motors_state.ra_steps;
     if (ra_diff < 0) ra_diff = -ra_diff;
     int64_t dec_diff = s_motion.dec_target - motors_state.dec_steps;
@@ -262,6 +276,16 @@ static bool check_motion_conditions(void) {
  * callers via motors_motion_stop() + motors_state update.
  * -------------------------------------------------------------------------- */
 static void process_command(MotionCommand cmd) {
+    /*
+     * If motors entered ERROR while this command was queued, reject it
+     * without touching state.  The mount layer already guards against
+     * enqueuing commands in ERROR, but a race between enqueue and
+     * error-detection could still deliver a stale command here.
+     */
+    if (motors_state.status == MOTORS_STATUS_ERROR) {
+        return;
+    }
+
     s_motion.active_cmd_type = cmd.type;
 
     switch (cmd.type) {
@@ -952,6 +976,11 @@ static void tracking_loop_rmt(void) {
  *     (batched RMT with ramps)
  * -------------------------------------------------------------------------- */
 static void motion_loop(void) {
+    /* Motor ERROR — refuse to enter any motion loop. */
+    if (motors_state.status == MOTORS_STATUS_ERROR) {
+        return;
+    }
+
     /* Standalone guide pulse (no tracking) — use the tracking loop
      * with zero base rate.  It handles DEC-only and RA-only guiding. */
     if ((motors_state.status == MOTORS_STATUS_TRACKING
