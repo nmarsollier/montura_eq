@@ -19,16 +19,13 @@ MotorsState motors_state = {
     .tracking = TRACKING_NONE,
     .ra_speed = 0.0f,
     .dec_speed = 0.0f,
-    .limits = {
-        .ra_min = -100.0f,
-        .ra_max = 100.0f,
-        .dec_min = -150.0f,
-        .dec_max = 150.0f,
-    },
 };
 
 esp_err_t motors_init(void) {
     esp_err_t err;
+
+    /* Load persisted axis limits (or factory defaults on first boot). */
+    motors_limits_load();
 
     err = motors_hw_init();
     if (err != ESP_OK) {

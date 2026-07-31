@@ -140,6 +140,22 @@
         </div>
     </div>
 
+    <!-- ═══ Set Limits ═══ -->
+    <div class="panel">
+        <div class="panel-header">
+            <div class="panel-dot"></div>
+            <strong>Set current position as</strong>
+        </div>
+        <div class="row">
+            <button @click="setLimit('set_home')" :disabled="isError">HOME</button>
+            <button @click="setLimit('set_ra_left')" :disabled="isError">RA Left</button>
+            <button @click="setLimit('set_ra_right')" :disabled="isError">RA Right</button>
+            <button @click="setLimit('set_dec_left')" :disabled="isError">DEC Left</button>
+            <button @click="setLimit('set_dec_right')" :disabled="isError">DEC Right</button>
+            <button class="danger" @click="setLimit('clear_limits')" :disabled="isError">Clear Limits</button>
+        </div>
+    </div>
+
     <!-- ═══ Manual Slew ═══ -->
     <div class="panel">
         <div class="panel-header">

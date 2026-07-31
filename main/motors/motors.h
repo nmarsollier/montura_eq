@@ -196,3 +196,23 @@ MotorResultCode motors_pulse_guide_start(int axis, float offset_dps, uint32_t du
  * Reads motors_state.guiding — written exclusively by the motion task.
  */
 bool motors_is_pulse_guiding(void);
+
+/* ── Axis limits (NVS-persisted, configurable at runtime) ── */
+
+/* Load limits from NVS (or factory defaults on first boot). */
+void motors_limits_load(void);
+
+/* Persist current limits to NVS. */
+void motors_limits_save(void);
+
+/* Set the current physical position as the new origin (home). */
+void motors_set_current_as_home(void);
+
+/* Set axis limits from the current physical position. */
+void motors_set_current_as_ra_left_limit(void);
+void motors_set_current_as_ra_right_limit(void);
+void motors_set_current_as_dec_left_limit(void);
+void motors_set_current_as_dec_right_limit(void);
+
+/* Reset limits to factory defaults and persist. */
+void motors_limits_reset(void);

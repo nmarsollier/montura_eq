@@ -221,3 +221,10 @@ void mount_set_guide_rate_ra(float rate_dps);
 void mount_set_guide_rate_dec(float rate_dps);
 float mount_get_guide_rate_ra(void);
 float mount_get_guide_rate_dec(void);
+
+/*
+ * Set an axis limit or home position from the current physical position.
+ * action: "set_home" | "set_ra_left" | "set_ra_right" |
+ *         "set_dec_left" | "set_dec_right"
+ */
+MountResult mount_limits_set(const char *action);

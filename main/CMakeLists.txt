@@ -26,6 +26,7 @@ idf_component_register(
         "motors/motors_tools.c"
 
         "motors/motors_hw.c"
+        "motors/motors_limits.c"
         "motors/motors_rmt.c"
         "motors/motors_command_queue.c"
         "motors/motors_motion_task.c"
@@ -38,6 +39,7 @@ idf_component_register(
         "mount/mount_slew_to_coordinates.c"
         "mount/mount_get_lst.c"
         "mount/mount_home.c"
+        "mount/mount_limits.c"
         "mount/mount_move_axis.c"
         "mount/mount_set_move_axis_speed.c"
         "mount/mount_park.c"
@@ -61,6 +63,7 @@ idf_component_register(
         "rest/rest_server_start.c"
         "rest/rest_slew_to_coordinates_handler.c"
         "rest/rest_home_handler.c"
+        "rest/rest_limits_handler.c"
         "rest/rest_move_axis_handler.c"
         "rest/rest_move_axis_speed_handler.c"
         "rest/rest_park_handler.c"

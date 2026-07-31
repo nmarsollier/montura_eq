@@ -681,8 +681,6 @@ footer code {
             <span class="coords" style="opacity:0.7"><span class="coords-label">LST</span> <span x-text="lst"></span></span>
             <div style="flex:1"></div>
             <span class="status-badge" x-text="statusText" :class="{ 'status-error': isError }"></span>
-            <span class="status-badge" x-show="isHome" style="background:#4caf50;color:#fff">HOME</span>
-            <span class="status-badge" x-show="isParked" style="background:#ff9800;color:#fff">PARKED</span>
         </div>
         <div class="info-row">
             <div>Tracking <span x-text="serverTracking"></span></div>
@@ -793,6 +791,22 @@ footer code {
                 </select>
                 <button class="primary" @click="setTracking()" :disabled="isError">Set</button>
             </div>
+        </div>
+    </div>
+
+    <!-- ═══ Set Limits ═══ -->
+    <div class="panel">
+        <div class="panel-header">
+            <div class="panel-dot"></div>
+            <strong>Set current position as</strong>
+        </div>
+        <div class="row">
+            <button @click="setLimit('set_home')" :disabled="isError">HOME</button>
+            <button @click="setLimit('set_ra_left')" :disabled="isError">RA Left</button>
+            <button @click="setLimit('set_ra_right')" :disabled="isError">RA Right</button>
+            <button @click="setLimit('set_dec_left')" :disabled="isError">DEC Left</button>
+            <button @click="setLimit('set_dec_right')" :disabled="isError">DEC Right</button>
+            <button class="danger" @click="setLimit('clear_limits')" :disabled="isError">Clear Limits</button>
         </div>
     </div>
 
@@ -1053,6 +1067,10 @@ footer code {
         setTracking() {
             this.apiPost('/api/tracking', {tracking: this.trackingOptions[this.selectedTracking]})
                 .then(() => this.fetchStatus());
+        },
+
+        setLimit(action) {
+            this.apiPost('/api/limits', {action: action}).then(() => this.fetchStatus());
         },
 
         // --- Joystick (continuous move via /api/move-axis-speed) ---

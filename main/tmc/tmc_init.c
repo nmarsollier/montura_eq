@@ -76,8 +76,8 @@ typedef struct {
 } TmcAxis;
 
 static const TmcAxis tmc_axes[] = {
-    { .name = "RA",  .address = 0x03, .irun = 21, .ihold = 12 },
-    { .name = "DEC", .address = 0x00, .irun = 18, .ihold = 8 },
+    { .name = "RA",  .address = 0x03, .irun = 16, .ihold = 8 },
+    { .name = "DEC", .address = 0x00, .irun = 12, .ihold = 6 },
 };
 
 /* ── UART helpers ──────────────────────────────────────────── */

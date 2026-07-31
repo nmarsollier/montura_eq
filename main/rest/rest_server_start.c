@@ -19,7 +19,7 @@ static const char *TAG = "REST_API_SERVER";
 void rest_server_start(void) {
     httpd_handle_t server = NULL;
     httpd_config_t config = HTTPD_DEFAULT_CONFIG();
-    config.max_uri_handlers = 19;
+    config.max_uri_handlers = 20;
     config.max_open_sockets = 4;
     config.lru_purge_enable = true;
     config.ctrl_port = 32768;
@@ -45,6 +45,7 @@ void rest_server_start(void) {
     rest_register_post(server, "/api/unpark", rest_unpark_handler);
     rest_register_post(server, "/api/settings", rest_settings_handler);
     rest_register_post(server, "/api/wifi-config", rest_wifi_handler);
+    rest_register_post(server, "/api/limits", rest_limits_handler);
 
     ESP_LOGI(TAG, "REST server started on port 80");
 }

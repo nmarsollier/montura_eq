@@ -40,6 +40,8 @@ esp_err_t rest_settings_handler(httpd_req_t *request);
 
 esp_err_t rest_wifi_handler(httpd_req_t *request);
 
+esp_err_t rest_limits_handler(httpd_req_t *request);
+
 void rest_send_result(
     httpd_req_t *request,
     MountResult result);

@@ -100,6 +100,10 @@ function mountApp() {
                 .then(() => this.fetchStatus());
         },
 
+        setLimit(action) {
+            this.apiPost('/api/limits', {action: action}).then(() => this.fetchStatus());
+        },
+
         // --- Joystick (continuous move via /api/move-axis-speed) ---
         joyRates: {ra: 0, dec: 0},
 
