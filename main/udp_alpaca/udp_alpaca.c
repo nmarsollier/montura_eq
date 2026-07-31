@@ -57,7 +57,7 @@ static void udp_alpaca_task(void *arg) {
     static const char response[] =
         "{"
         "\"AlpacaPort\":11111,"
-        "\"ServerName\":\"Montura EQ\","
+        "\"ServerName\":\"NRM-WO\","
         "\"Version\":\"v1\","
         "\"InterfaceVersion\":3"
         "}";

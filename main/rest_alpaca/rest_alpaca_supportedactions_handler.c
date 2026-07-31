@@ -3,7 +3,7 @@
 
 /* Alpaca — Device — SupportedActions
  *
- * Purpose: Returns the list of custom action names (empty for Montura EQ).
+ * Purpose: Returns the list of custom action names (empty for NRM-WO).
  *
  * Alpaca usage: Called by clients that support vendor-specific action extensions.
  */

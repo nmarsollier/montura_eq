@@ -1,4 +1,4 @@
-# Montura EQ — No Precision Instruments Inc.
+# NRM-WO — No Precision Instruments Inc.
 
 Fully functional mini equatorial mount toy powered by an ESP32-S3, controllable via N.I.N.A. (Alpaca / ASCOM)
 and its own REST API.
@@ -7,7 +7,7 @@ This firmware runs on a Hosyond ESP32-S3 N16R8 board, driving two NEMA 17 steppe
 TMC2209 drivers. It exposes a full ASCOM Alpaca telescope interface on port 11111 so
 N.I.N.A. and other clients can discover and control the mount directly.
 
-<img src="docs/montura-eq.jpeg" alt="Montura EQ" width="400">
+<img src="docs/montura-eq.jpeg" alt="NRM-WO" width="400">
 
 ## Architecture
 
@@ -37,9 +37,9 @@ Runtime  (init sequence + periodic loop)
 
 ### Pin mapping
 
-<img src="docs/circuit.jpeg" alt="Montura EQ" width="400">
+<img src="docs/circuit.jpeg" alt="NRM-WO" width="400">
 
-<img src="docs/board.jpeg" alt="Montura EQ" width="400">
+<img src="docs/board.jpeg" alt="NRM-WO" width="400">
 
 | GPIO | Function           | Notes                        |
 |------|--------------------|------------------------------|

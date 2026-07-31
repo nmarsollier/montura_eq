@@ -4,7 +4,7 @@
  *
  * Called from the REST API when the user submits Wi-Fi configuration.
  * ESP-IDF stores the credentials in its own NVS namespace so they survive
- * reboot — Montura EQ does not keep a separate Wi-Fi config.
+ * reboot — NRM-WO does not keep a separate Wi-Fi config.
  */
 #include "wifi.h"
 

@@ -14,7 +14,7 @@
  * Business use case: allow clients to configure home Wi-Fi credentials.
  *
  * Objective: pass the requested SSID/password to the ESP-IDF Wi-Fi driver.
- * ESP-IDF persists that station configuration internally; Montura EQ does not
+ * ESP-IDF persists that station configuration internally; NRM-WO does not
  * store a separate Wi-Fi config in its own NVS namespace.
  */
 esp_err_t rest_wifi_handler(httpd_req_t *request) {

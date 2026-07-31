@@ -3,7 +3,7 @@
  * Purpose: initialize Wi-Fi for the physical ESP32-S3 board.
  *
  * The device uses ESP-IDF Wi-Fi driver storage for home network credentials.
- * Montura EQ does not store a separate SSID/password in its own NVS namespace.
+ * NRM-WO does not store a separate SSID/password in its own NVS namespace.
  *
  * Boot behavior:
  * - If the ESP-IDF Wi-Fi driver already has a station SSID, try to connect.

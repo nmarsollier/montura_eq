@@ -11,7 +11,7 @@ void wifi_sntp_start(void);
 extern bool wifi_started;
 extern int  wifi_retry_count;
 
-#define WIFI_SETUP_AP_SSID "Montura EQ"
+#define WIFI_SETUP_AP_SSID "NRM-WO"
 #define WIFI_SETUP_AP_PASSWORD ""
 #define WIFI_SETUP_AP_CHANNEL 1
 #define WIFI_SETUP_AP_MAX_CONNECTIONS 4

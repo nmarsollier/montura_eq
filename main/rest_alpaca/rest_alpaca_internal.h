@@ -10,9 +10,9 @@
  * ═══════════════════════════════════════════════════════════════ */
 
 /* ─── Alpaca server identity ─── */
-#define ALPACA_SERVER_NAME        "Montura EQ"
-#define ALPACA_SERVER_DESCRIPTION "Montura EQ \xe2\x80\x94 Ecuatorial Mount Controller"
-#define ALPACA_DRIVER_INFO        "Montura EQ Alpaca Driver v1.0"
+#define ALPACA_SERVER_NAME        "NRM-WO"
+#define ALPACA_SERVER_DESCRIPTION "NRM-WO \xe2\x80\x94 Ecuatorial Mount Controller"
+#define ALPACA_DRIVER_INFO        "NRM-WO Alpaca Driver v1.0"
 #define ALPACA_DRIVER_VERSION     "1.0.0"
 #define ALPACA_INTERFACE_VERSION  3
 
@@ -21,10 +21,10 @@
 #define ALPACA_MAX_URI_HANDLERS   64
 
 /* ─── Telescope device ─── */
-#define ALPACA_DEVICE_NAME        "Montura EQ"
+#define ALPACA_DEVICE_NAME        "NRM-WO"
 #define ALPACA_DEVICE_TYPE        "Telescope"
 #define ALPACA_DEVICE_NUMBER      0
-#define ALPACA_UNIQUE_ID          "montura-eq-telescope-001"
+#define ALPACA_UNIQUE_ID          "nrm-wo-telescope-001"
 
 /* ─── Physical constants (mock values for optional features) ─── */
 #define ALPACA_APERTURE_AREA      0.0113f   /* m^2  (120mm aperture) */

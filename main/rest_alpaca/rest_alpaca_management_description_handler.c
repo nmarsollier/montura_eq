@@ -13,7 +13,7 @@ esp_err_t alpaca_management_description_handler(httpd_req_t *req) {
     snprintf(buf, sizeof(buf),
              "{\"Value\":{"
              "\"ServerName\":\"%s\","
-             "\"Manufacturer\":\"Montura EQ\","
+             "\"Manufacturer\":\"NRM-WO\","
              "\"ManufacturerVersion\":\"%s\","
              "\"Location\":\"Embedded\""
              "},"
